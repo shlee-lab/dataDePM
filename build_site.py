@@ -317,24 +317,6 @@ def build_html(data):
             </div>
         </header>
 
-        <!-- 지표 설명 -->
-        <section class="section">
-            <h2>📖 사용된 집중도 지표 설명</h2>
-            <dl class="metric-explanation">
-                <dt>지니 계수 (Gini Coefficient)</dt>
-                <dd>0~1 사이 값. 0은 완전 평등, 1은 완전 불평등. 경제학에서 소득 불평등 측정에 표준으로 사용됨. 0.4 이상이면 높은 불평등으로 간주.</dd>
-
-                <dt>HHI (Herfindahl-Hirschman Index)</dt>
-                <dd>0~10,000 사이 값. 시장 집중도 측정에 사용되며, 미국 법무부가 독점 심사에 활용. 1,500 미만 = 경쟁적, 1,500~2,500 = 중간 집중, 2,500 이상 = 고도 집중.</dd>
-
-                <dt>나카모토 계수 (Nakamoto Coefficient)</dt>
-                <dd>시스템의 51%를 장악하는 데 필요한 최소 엔티티 수. 블록체인 탈중앙화 측정의 표준 지표. 값이 낮을수록 중앙화됨 (1 = 사실상 중앙화).</dd>
-
-                <dt>정규화 엔트로피 (Normalized Entropy)</dt>
-                <dd>0~1 사이 값. 정보이론의 섀넌 엔트로피를 정규화한 것. 1에 가까울수록 분산됨, 0에 가까울수록 집중됨.</dd>
-            </dl>
-        </section>
-
         <!-- 1. 유동성 리스크 -->
         <section class="section">
             <h2><span class="section-number">1</span> 유동성 리스크</h2>
@@ -428,6 +410,20 @@ def build_html(data):
                 <div class="chart-title">오라클 집중도 비교</div>
                 <canvas id="oracleCompareChart" height="100"></canvas>
             </div>
+
+            <dl class="metric-explanation">
+                <dt>지니 계수 (Gini Coefficient)</dt>
+                <dd>0~1 사이 값. 0은 완전 평등, 1은 완전 불평등. 경제학에서 소득 불평등 측정에 표준으로 사용됨. 0.4 이상이면 높은 불평등으로 간주.</dd>
+
+                <dt>HHI (Herfindahl-Hirschman Index)</dt>
+                <dd>0~10,000 사이 값. 시장 집중도 측정에 사용되며, 미국 법무부가 독점 심사에 활용. 1,500 미만 = 경쟁적, 1,500~2,500 = 중간 집중, 2,500 이상 = 고도 집중.</dd>
+
+                <dt>나카모토 계수 (Nakamoto Coefficient)</dt>
+                <dd>시스템의 51%를 장악하는 데 필요한 최소 엔티티 수. 블록체인 탈중앙화 측정의 표준 지표. 값이 낮을수록 중앙화됨 (1 = 사실상 중앙화).</dd>
+
+                <dt>정규화 엔트로피 (Normalized Entropy)</dt>
+                <dd>0~1 사이 값. 정보이론의 섀넌 엔트로피를 정규화한 것. 1에 가까울수록 분산됨, 0에 가까울수록 집중됨.</dd>
+            </dl>
 
             <div class="oracle-grid">
                 <!-- UMA -->
