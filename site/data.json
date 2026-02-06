@@ -378,5 +378,22 @@
         "theil": 2.1203
       }
     }
+  },
+  "contracts": {
+    "uma_token": {
+      "address": "0x04Fa0d235C4abf4BcF4787aF4CF447DE572eF828",
+      "chain": "ethereum",
+      "explorer": "https://etherscan.io/token/0x04Fa0d235C4abf4BcF4787aF4CF447DE572eF828"
+    },
+    "kleros_ethereum": {
+      "address": "0x93ed3fbe21207ec2e8f2d3c3de6e058cb73bc04d",
+      "chain": "ethereum",
+      "explorer": "https://etherscan.io/token/0x93ed3fbe21207ec2e8f2d3c3de6e058cb73bc04d"
+    },
+    "kleros_arbitrum": {
+      "address": "0x330bD769382cFc6d50175903434CCC8D206DCAE5",
+      "chain": "arbitrum",
+      "explorer": "https://arbiscan.io/token/0x330bD769382cFc6d50175903434CCC8D206DCAE5"
+    }
   }
 }
