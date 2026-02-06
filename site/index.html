@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예측시장 구조적 리스크 분석</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 40px 0;
+            border-bottom: 1px solid #333;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #ff6b6b, #ffa500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 1.1rem;
+        }
+        .section {
+            margin-bottom: 60px;
+        }
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-number {
+            background: linear-gradient(135deg, #ff6b6b, #ffa500);
+            color: #000;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        .stat-value.danger {
+            color: #ff6b6b;
+        }
+        .stat-value.warning {
+            color: #ffa500;
+        }
+        .stat-label {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        .chart-container {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-title {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1a1a1a;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        th {
+            background: #252525;
+            font-weight: 600;
+            color: #ccc;
+        }
+        tr:hover {
+            background: #252525;
+        }
+        .address {
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #888;
+        }
+        .risk-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .risk-high {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+        .risk-medium {
+            background: rgba(255, 165, 0, 0.2);
+            color: #ffa500;
+        }
+        .insight-box {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 165, 0, 0.1));
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .insight-box h4 {
+            color: #ffa500;
+            margin-bottom: 10px;
+        }
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            border-top: 1px solid #333;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>예측시장 구조적 리스크 분석</h1>
+            <p class="subtitle">Polymarket, UMA & Kleros Oracle 데이터 기반</p>
+        </header>
+
+        <!-- 1. 유동성 리스크 -->
+        <section class="section">
+            <h2><span class="section-number">1</span> 유동성 리스크</h2>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">5,000</div>
+                    <div class="stat-label">전체 마켓 수</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">1,434</div>
+                    <div class="stat-label">유동성 $10K+ 마켓</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value warning">28.7%</div>
+                    <div class="stat-label">$10K+ 비율</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">$264.0M</div>
+                    <div class="stat-label">총 유동성</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">유동성 집중도: 상위 N개 마켓 점유율</div>
+                <canvas id="concentrationChart" height="100"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">유동성 분포 (마켓 수)</div>
+                <canvas id="distributionChart" height="100"></canvas>
+            </div>
+
+            <div class="insight-box">
+                <h4>핵심 인사이트</h4>
+                <p>전체 5,000개 마켓 중 유동성 $10K 이상인 마켓은 1,434개 (28.7%)에 불과합니다.
+                상위 10개 마켓이 전체 거래량의 11.6%를 차지하며, 대부분의 마켓에서는 원하는 가격에 베팅하기 어렵습니다.</p>
+            </div>
+        </section>
+
+        <!-- 2. 시장 조작 리스크 -->
+        <section class="section">
+            <h2><span class="section-number">2</span> 시장 조작 리스크</h2>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value danger">71.3%</div>
+                    <div class="stat-label">조작 취약 마켓 비율</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value warning">6.5%</div>
+                    <div class="stat-label">상위 5개 거래량 점유율</div>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h4>유동성-조작 연결고리</h4>
+                <p>유동성이 낮은 마켓(71.3%)은 소액으로도 가격 조작이 가능합니다.
+                이는 wash trading, 자전거래 등의 조작에 취약하며, 조작이 의심되면 참여자가 줄어 유동성이 더 낮아지는 악순환이 발생합니다.</p>
+            </div>
+
+            <h3 style="margin: 30px 0 15px; color: #ccc;">거래량 상위 20개 마켓</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>마켓</th>
+                        <th>거래량</th>
+                        <th>유동성</th>
+                        <th>카테고리</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td>1</td>
+                        <td>Will Trump nominate Judy Shelton as the next Fed chair?</td>
+                        <td>$55.19M</td>
+                        <td>$520K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Will Leeds win the 2025–26 English Premier League?</td>
+                        <td>$36.02M</td>
+                        <td>$1081K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Will Oprah Winfrey win the 2028 Democratic presidential nomi...</td>
+                        <td>$32.56M</td>
+                        <td>$342K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>Will Chelsea Clinton win the 2028 Democratic presidential no...</td>
+                        <td>$31.83M</td>
+                        <td>$730K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>Will Trump nominate Kevin Warsh as the next Fed chair?</td>
+                        <td>$31.76M</td>
+                        <td>$271K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>Will Andrew Yang win the 2028 Democratic presidential nomina...</td>
+                        <td>$30.47M</td>
+                        <td>$1072K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>Will the Indiana Pacers win the 2026 NBA Finals?</td>
+                        <td>$30.30M</td>
+                        <td>$368K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>Will the Memphis Grizzlies win the 2026 NBA Finals?</td>
+                        <td>$30.05M</td>
+                        <td>$936K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td>Will MrBeast win the 2028 Democratic presidential nomination...</td>
+                        <td>$28.42M</td>
+                        <td>$1179K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td>Will Bernie Sanders win the 2028 Democratic presidential nom...</td>
+                        <td>$27.93M</td>
+                        <td>$1153K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>11</td>
+                        <td>Will the Fed increase interest rates by 25+ bps after the Ma...</td>
+                        <td>$27.85M</td>
+                        <td>$568K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>12</td>
+                        <td>Will LeBron James win the 2028 Democratic presidential nomin...</td>
+                        <td>$27.13M</td>
+                        <td>$1234K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>13</td>
+                        <td>Will Hillary Clinton win the 2028 Democratic presidential no...</td>
+                        <td>$27.07M</td>
+                        <td>$1077K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>14</td>
+                        <td>Will George Clooney win the 2028 Democratic presidential nom...</td>
+                        <td>$26.71M</td>
+                        <td>$1309K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>15</td>
+                        <td>Will Phil Murphy win the 2028 Democratic presidential nomina...</td>
+                        <td>$26.57M</td>
+                        <td>$1088K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>16</td>
+                        <td>Will Zohran Mamdani win the 2028 Democratic presidential nom...</td>
+                        <td>$26.48M</td>
+                        <td>$671K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>17</td>
+                        <td>Will the Fed decrease interest rates by 50+ bps after the Ma...</td>
+                        <td>$26.30M</td>
+                        <td>$1602K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>18</td>
+                        <td>Will Tim Walz win the 2028 US Presidential Election?</td>
+                        <td>$26.01M</td>
+                        <td>$552K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>19</td>
+                        <td>Will LeBron James win the 2028 US Presidential Election?</td>
+                        <td>$25.82M</td>
+                        <td>$1193K</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>20</td>
+                        <td>Will Trump nominate Jerome Powell as the next Fed chair?</td>
+                        <td>$23.89M</td>
+                        <td>$2278K</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 3. 오라클 리스크 -->
+        <section class="section">
+            <h2><span class="section-number">3</span> 오라클/결정 메커니즘 리스크</h2>
+
+            <h3 style="margin: 20px 0 15px; color: #fff; font-size: 1.4rem;">UMA Oracle</h3>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value danger">1</div>
+                    <div class="stat-label">나카모토 계수 (51% 장악 필요 수)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value danger">0.9373</div>
+                    <div class="stat-label">지니 계수 (0=평등, 1=불평등)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value warning">5,602</div>
+                    <div class="stat-label">HHI (>2500 = 고도 집중)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">0.2992</div>
+                    <div class="stat-label">정규화 엔트로피 (1=분산)</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">UMA 토큰 홀더 집중도</div>
+                <canvas id="umaChart" height="100"></canvas>
+            </div>
+
+            <div class="insight-box">
+                <h4>UMA 오라클 - 사실상 중앙화</h4>
+                <p><strong>나카모토 계수가 1</strong>입니다. 이는 단 1명이 전체 투표권의 51% 이상을 보유하고 있어 사실상 결과를 좌우할 수 있다는 의미입니다.
+                지니 계수 0.9373은 극단적 불평등을, HHI 5,602는 고도 집중(>2500)을 나타냅니다.</p>
+            </div>
+
+            <h3 style="margin: 30px 0 15px; color: #ccc;">UMA 토큰 상위 10개 주소</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>주소</th>
+                        <th>잔액 (UMA)</th>
+                        <th>점유율</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td>1</td>
+                        <td class="address">0x004395ed...93bd34ac</td>
+                        <td>33,255,660</td>
+                        <td>74.3%</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td class="address">0x28c6c062...3bf21d60</td>
+                        <td>2,670,257</td>
+                        <td>6.0%</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td class="address">0x5ee8dd3e...6d7d039e</td>
+                        <td>2,106,092</td>
+                        <td>4.7%</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td class="address">0xa9d1e08c...b81d3e43</td>
+                        <td>1,273,271</td>
+                        <td>2.8%</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td class="address">0x91d40e48...2ac8debe</td>
+                        <td>855,521</td>
+                        <td>1.9%</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td class="address">0xf89d7b9c...b35eaa40</td>
+                        <td>806,981</td>
+                        <td>1.8%</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td class="address">0xa5946a2c...9bf5aed1</td>
+                        <td>586,753</td>
+                        <td>1.3%</td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td class="address">0xc80afd31...1fe92416</td>
+                        <td>408,631</td>
+                        <td>0.9%</td>
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td class="address">0xb334a61a...1f66e1ef</td>
+                        <td>372,839</td>
+                        <td>0.8%</td>
+                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td class="address">0xab782bc7...f63ee1bc</td>
+                        <td>275,418</td>
+                        <td>0.6%</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Kleros 섹션 -->
+            <h3 style="margin: 50px 0 20px; color: #fff; font-size: 1.4rem;">Kleros (PNK) 오라클</h3>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value danger">2</div>
+                    <div class="stat-label">Arbitrum 나카모토 계수</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value danger">0.9089</div>
+                    <div class="stat-label">Arbitrum 지니 계수</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value warning">2,251</div>
+                    <div class="stat-label">Arbitrum HHI</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">2</div>
+                    <div class="stat-label">Ethereum 나카모토 계수</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">오라클 집중도 비교 (학술 지표)</div>
+                <canvas id="oracleCompareChart" height="120"></canvas>
+            </div>
+
+            <div class="insight-box">
+                <h4>Kleros vs UMA 비교</h4>
+                <p>Kleros v2(Arbitrum)의 나카모토 계수는 <strong>2</strong>로, UMA(1)보다 소폭 나은 수준이지만 여전히 2명이면 51%를 장악할 수 있습니다.
+                지니 계수 0.9089와 HHI 2,251는 UMA와 유사한 수준의 높은 집중도를 보여줍니다.</p>
+            </div>
+
+            <h3 style="margin: 30px 0 15px; color: #ccc;">Kleros (Arbitrum v2) 상위 10개 주소</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>주소</th>
+                        <th>잔액 (PNK)</th>
+                        <th>점유율</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td>1</td>
+                        <td class="address">0x540f6ae4...9290c678</td>
+                        <td>5,759,988</td>
+                        <td>35.8%</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td class="address">0x467d5bf8...8934b725</td>
+                        <td>3,683,455</td>
+                        <td>22.9%</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td class="address">0x53f5eeb1...da50c5ce</td>
+                        <td>2,453,112</td>
+                        <td>15.3%</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td class="address">0xdc657fac...6bf998f7</td>
+                        <td>1,818,174</td>
+                        <td>11.3%</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td class="address">0x0c120205...ba629338</td>
+                        <td>1,278,425</td>
+                        <td>8.0%</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td class="address">0x991d2df1...664222ea</td>
+                        <td>624,825</td>
+                        <td>3.9%</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td class="address">0x92881105...5609dc7f</td>
+                        <td>94,036</td>
+                        <td>0.6%</td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td class="address">0x59828ba5...9def4edf</td>
+                        <td>77,448</td>
+                        <td>0.5%</td>
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td class="address">0xf20edd94...4aab61d5</td>
+                        <td>70,687</td>
+                        <td>0.4%</td>
+                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td class="address">0xaead6593...0773d7e6</td>
+                        <td>51,912</td>
+                        <td>0.3%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <footer>
+            <p>데이터 수집일: 2026-02-06</p>
+            <p>Polymarket API & Etherscan API 기반</p>
+        </footer>
+    </div>
+
+    <script>
+        // 집중도 차트
+        const concentrationData = [{"top_n": 5, "volume_share": 6.5, "liquidity_share": 6.7}, {"top_n": 10, "volume_share": 11.6, "liquidity_share": 13.1}, {"top_n": 20, "volume_share": 20.7, "liquidity_share": 22.2}, {"top_n": 50, "volume_share": 40.9, "liquidity_share": 34.9}, {"top_n": 100, "volume_share": 62.4, "liquidity_share": 49.5}];
+        new Chart(document.getElementById('concentrationChart'), {
+            type: 'bar',
+            data: {
+                labels: concentrationData.map(d => 'Top ' + d.top_n),
+                datasets: [{
+                    label: '거래량 점유율 (%)',
+                    data: concentrationData.map(d => d.volume_share),
+                    backgroundColor: 'rgba(255, 165, 0, 0.7)',
+                    borderColor: 'rgba(255, 165, 0, 1)',
+                    borderWidth: 1
+                }, {
+                    label: '유동성 점유율 (%)',
+                    data: concentrationData.map(d => d.liquidity_share),
+                    backgroundColor: 'rgba(255, 107, 107, 0.7)',
+                    borderColor: 'rgba(255, 107, 107, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: '#333' },
+                        ticks: { color: '#888' }
+                    },
+                    x: {
+                        grid: { color: '#333' },
+                        ticks: { color: '#888' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#ccc' }
+                    }
+                }
+            }
+        });
+
+        // 분포 차트
+        const distData = [{"bucket": "$0-100", "count": 147}, {"bucket": "$100-1K", "count": 1080}, {"bucket": "$1K-10K", "count": 2339}, {"bucket": "$10K-100K", "count": 1000}, {"bucket": "$100K-1M", "count": 387}, {"bucket": "$1M+", "count": 47}];
+        new Chart(document.getElementById('distributionChart'), {
+            type: 'bar',
+            data: {
+                labels: distData.map(d => d.bucket),
+                datasets: [{
+                    label: '마켓 수',
+                    data: distData.map(d => d.count),
+                    backgroundColor: 'rgba(100, 200, 255, 0.7)',
+                    borderColor: 'rgba(100, 200, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#333' },
+                        ticks: { color: '#888' }
+                    },
+                    x: {
+                        grid: { color: '#333' },
+                        ticks: { color: '#888' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#ccc' }
+                    }
+                }
+            }
+        });
+
+        // UMA 차트
+        const umaConc = {"top5": 89.8, "top10": 95.2, "top20": 98.8};
+        new Chart(document.getElementById('umaChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['상위 5명', '6-10위', '11-20위', '나머지'],
+                datasets: [{
+                    data: [
+                        umaConc.top5,
+                        umaConc.top10 - umaConc.top5,
+                        umaConc.top20 - umaConc.top10,
+                        100 - umaConc.top20
+                    ],
+                    backgroundColor: [
+                        'rgba(255, 107, 107, 0.8)',
+                        'rgba(255, 165, 0, 0.8)',
+                        'rgba(100, 200, 255, 0.8)',
+                        'rgba(100, 100, 100, 0.8)'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { color: '#ccc' }
+                    }
+                }
+            }
+        });
+
+        // 오라클 비교 차트 - 학술 지표
+        new Chart(document.getElementById('oracleCompareChart'), {
+            type: 'bar',
+            data: {
+                labels: ['UMA', 'Kleros (Ethereum)', 'Kleros v2 (Arbitrum)'],
+                datasets: [{
+                    label: '지니 계수',
+                    data: [0.9373, 0.8781, 0.9089],
+                    backgroundColor: 'rgba(255, 107, 107, 0.8)',
+                    borderWidth: 0
+                }, {
+                    label: '정규화 엔트로피 (역전)',
+                    data: [0.7008, 0.48109999999999997, 0.5507],
+                    backgroundColor: 'rgba(255, 165, 0, 0.8)',
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 1,
+                        grid: { color: '#333' },
+                        ticks: { color: '#888' }
+                    },
+                    x: {
+                        grid: { color: '#333' },
+                        ticks: { color: '#ccc' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#ccc' }
+                    },
+                    title: {
+                        display: true,
+                        text: '값이 높을수록 집중도 높음',
+                        color: '#666'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

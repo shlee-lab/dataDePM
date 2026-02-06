@@ -1,0 +1,382 @@
+{
+  "polymarket_markets": {
+    "total": 5000,
+    "total_volume": 2885228933.567703,
+    "total_liquidity": 264047557.60641,
+    "active_count": 5000,
+    "liquid_10k": 1434,
+    "top_20_markets": [
+      {
+        "question": "Will Trump nominate Judy Shelton as the next Fed chair?",
+        "volume": 55190098.567535,
+        "liquidity": 519878.78629,
+        "category": null
+      },
+      {
+        "question": "Will Leeds win the 2025–26 English Premier League?",
+        "volume": 36022962.698948,
+        "liquidity": 1081097.89687,
+        "category": null
+      },
+      {
+        "question": "Will Oprah Winfrey win the 2028 Democratic presidential nomination?",
+        "volume": 32557202.449252,
+        "liquidity": 342217.89587,
+        "category": null
+      },
+      {
+        "question": "Will Chelsea Clinton win the 2028 Democratic presidential nomination?",
+        "volume": 31828067.409569,
+        "liquidity": 730308.96642,
+        "category": null
+      },
+      {
+        "question": "Will Trump nominate Kevin Warsh as the next Fed chair?",
+        "volume": 31758030.922384,
+        "liquidity": 270735.49423,
+        "category": null
+      },
+      {
+        "question": "Will Andrew Yang win the 2028 Democratic presidential nomination?",
+        "volume": 30466502.767357,
+        "liquidity": 1071779.54837,
+        "category": null
+      },
+      {
+        "question": "Will the Indiana Pacers win the 2026 NBA Finals?",
+        "volume": 30296620.519774,
+        "liquidity": 367976.75464,
+        "category": null
+      },
+      {
+        "question": "Will the Memphis Grizzlies win the 2026 NBA Finals?",
+        "volume": 30052038.136182,
+        "liquidity": 936044.04629,
+        "category": null
+      },
+      {
+        "question": "Will MrBeast win the 2028 Democratic presidential nomination?",
+        "volume": 28415369.854299,
+        "liquidity": 1178652.17966,
+        "category": null
+      },
+      {
+        "question": "Will Bernie Sanders win the 2028 Democratic presidential nomination?",
+        "volume": 27933007.71715,
+        "liquidity": 1152876.70429,
+        "category": null
+      },
+      {
+        "question": "Will the Fed increase interest rates by 25+ bps after the March 2026 meeting?",
+        "volume": 27849964.677151,
+        "liquidity": 568122.8896,
+        "category": null
+      },
+      {
+        "question": "Will LeBron James win the 2028 Democratic presidential nomination?",
+        "volume": 27125229.189439,
+        "liquidity": 1233577.45439,
+        "category": null
+      },
+      {
+        "question": "Will Hillary Clinton win the 2028 Democratic presidential nomination?",
+        "volume": 27074215.239199,
+        "liquidity": 1077091.3321,
+        "category": null
+      },
+      {
+        "question": "Will George Clooney win the 2028 Democratic presidential nomination?",
+        "volume": 26711431.777259,
+        "liquidity": 1308659.23351,
+        "category": null
+      },
+      {
+        "question": "Will Phil Murphy win the 2028 Democratic presidential nomination?",
+        "volume": 26567862.522519,
+        "liquidity": 1088495.74385,
+        "category": null
+      },
+      {
+        "question": "Will Zohran Mamdani win the 2028 Democratic presidential nomination?",
+        "volume": 26483520.38906,
+        "liquidity": 671458.53628,
+        "category": null
+      },
+      {
+        "question": "Will the Fed decrease interest rates by 50+ bps after the March 2026 meeting?",
+        "volume": 26299530.923498,
+        "liquidity": 1601578.17344,
+        "category": null
+      },
+      {
+        "question": "Will Tim Walz win the 2028 US Presidential Election?",
+        "volume": 26006840.870492,
+        "liquidity": 551809.43275,
+        "category": null
+      },
+      {
+        "question": "Will LeBron James win the 2028 US Presidential Election?",
+        "volume": 25817204.167243,
+        "liquidity": 1192789.7501,
+        "category": null
+      },
+      {
+        "question": "Will Trump nominate Jerome Powell as the next Fed chair?",
+        "volume": 23889892.01542,
+        "liquidity": 2278001.68849,
+        "category": null
+      }
+    ]
+  },
+  "liquidity_concentration": [
+    {
+      "top_n": 5,
+      "volume_share": 6.5,
+      "liquidity_share": 6.7
+    },
+    {
+      "top_n": 10,
+      "volume_share": 11.6,
+      "liquidity_share": 13.1
+    },
+    {
+      "top_n": 20,
+      "volume_share": 20.7,
+      "liquidity_share": 22.2
+    },
+    {
+      "top_n": 50,
+      "volume_share": 40.9,
+      "liquidity_share": 34.9
+    },
+    {
+      "top_n": 100,
+      "volume_share": 62.4,
+      "liquidity_share": 49.5
+    }
+  ],
+  "liquidity_distribution": [
+    {
+      "bucket": "$0-100",
+      "count": 147
+    },
+    {
+      "bucket": "$100-1K",
+      "count": 1080
+    },
+    {
+      "bucket": "$1K-10K",
+      "count": 2339
+    },
+    {
+      "bucket": "$10K-100K",
+      "count": 1000
+    },
+    {
+      "bucket": "$100K-1M",
+      "count": 387
+    },
+    {
+      "bucket": "$1M+",
+      "count": 47
+    }
+  ],
+  "uma_holders": {
+    "total_holders": 62,
+    "total_balance": 44744811.70387039,
+    "top_holders": [
+      {
+        "address": "0x004395edb43efca9885cedad51ec9faf93bd34ac",
+        "balance": 33255660.223656178
+      },
+      {
+        "address": "0x28c6c06298d514db089934071355e5743bf21d60",
+        "balance": 2670257.32683139
+      },
+      {
+        "address": "0x5ee8dd3eefd8dbe1b019e312bce563ff6d7d039e",
+        "balance": 2106092.4676923095
+      },
+      {
+        "address": "0xa9d1e08c7793af67e9d92fe308d5697fb81d3e43",
+        "balance": 1273270.6218290026
+      },
+      {
+        "address": "0x91d40e4818f4d4c57b4578d9eca6afc92ac8debe",
+        "balance": 855520.6789578418
+      },
+      {
+        "address": "0xf89d7b9c864f589bbf53a82105107622b35eaa40",
+        "balance": 806980.6121691492
+      },
+      {
+        "address": "0xa5946a2c7a6c4232224b89a696ae51879bf5aed1",
+        "balance": 586753.422282
+      },
+      {
+        "address": "0xc80afd311c9626528de66d86814770361fe92416",
+        "balance": 408631.029265535
+      },
+      {
+        "address": "0xb334a61a6209f14b5fa5f1684a4ed7621f66e1ef",
+        "balance": 372838.6041331164
+      },
+      {
+        "address": "0xab782bc7d4a2b306825de5a7730034f8f63ee1bc",
+        "balance": 275418.3212764215
+      }
+    ],
+    "concentration": {
+      "top5": 89.8,
+      "top10": 95.2,
+      "top20": 98.8
+    },
+    "metrics": {
+      "name": "UMA",
+      "sample_size": 62,
+      "total": 44744811.70387039,
+      "top5_share": 89.76,
+      "top10_share": 95.23,
+      "top20_share": 98.8,
+      "gini": 0.9373,
+      "hhi": 5601.87,
+      "nakamoto": 1,
+      "entropy": 1.7813,
+      "normalized_entropy": 0.2992,
+      "theil": 2.8924
+    }
+  },
+  "uma_events": {
+    "total_events": 1000
+  },
+  "kleros": {
+    "ethereum": {
+      "total_holders": 44,
+      "total_balance": 319896372.6401379,
+      "top_holders": [
+        {
+          "address": "0x86ead908fb5d6f900ff109c9e26f79300f99271a",
+          "balance": 114824109.99003409
+        },
+        {
+          "address": "0x000000000004444c5dc75cb358380d2e3de08a90",
+          "balance": 55630587.81435978
+        },
+        {
+          "address": "0x88ad09518695c6c3712ac10a214be5109a655671",
+          "balance": 42903669.460713044
+        },
+        {
+          "address": "0xdbc3088dfebc3cc6a84b0271dade2696db00af38",
+          "balance": 28078210.65774664
+        },
+        {
+          "address": "0xa3a7b6f88361f48403514059f1f16c8e78d60eec",
+          "balance": 23622188.74901708
+        },
+        {
+          "address": "0x2ff064d951996c9fe70d6ba22d8684f37b2e24ec",
+          "balance": 14860506.768104384
+        },
+        {
+          "address": "0x77134cbc06cb00b66f4c7e623d5fdbf6777635ec",
+          "balance": 13469900.490051512
+        },
+        {
+          "address": "0x49f3847a3ae8b37e2d4e469aab3c5d64d54db860",
+          "balance": 10734572.367112484
+        },
+        {
+          "address": "0x954d56851b597d27b245fd66e5bd48e0425d063f",
+          "balance": 7362819.75156916
+        },
+        {
+          "address": "0x9762c600a39bda3359f50a1fb1f90945cead379d",
+          "balance": 3555595.3025061507
+        }
+      ],
+      "concentration": {
+        "top5": 82.9,
+        "top10": 98.5
+      },
+      "metrics": {
+        "name": "Kleros Ethereum",
+        "sample_size": 44,
+        "total": 319896372.6401379,
+        "top5_share": 82.86,
+        "top10_share": 98.48,
+        "top20_share": 99.99,
+        "gini": 0.8781,
+        "hhi": 1959.93,
+        "nakamoto": 2,
+        "entropy": 2.8329,
+        "normalized_entropy": 0.5189,
+        "theil": 1.8206
+      }
+    },
+    "arbitrum": {
+      "total_holders": 47,
+      "total_balance": 16067577.07209418,
+      "top_holders": [
+        {
+          "address": "0x540f6ae41ea8e62b92f3ab205ca13fee9290c678",
+          "balance": 5759988.19619538
+        },
+        {
+          "address": "0x467d5bf8cfa1a5f99328fbdcb9c751c78934b725",
+          "balance": 3683454.642285963
+        },
+        {
+          "address": "0x53f5eeb133b99c6e59108f35bcc7a116da50c5ce",
+          "balance": 2453112.1576972445
+        },
+        {
+          "address": "0xdc657fac185d00cdfa34a8378bb87d586bf998f7",
+          "balance": 1818173.969576374
+        },
+        {
+          "address": "0x0c120205a493ea0bbd71256073298ed2ba629338",
+          "balance": 1278424.9447796287
+        },
+        {
+          "address": "0x991d2df165670b9cac3b022f4b68d65b664222ea",
+          "balance": 624825.1000000001
+        },
+        {
+          "address": "0x92881105e0d4c1569342d4fcc793f8a65609dc7f",
+          "balance": 94035.56495358862
+        },
+        {
+          "address": "0x59828ba50050612d3edc24ea2d7973269def4edf",
+          "balance": 77447.85114880862
+        },
+        {
+          "address": "0xf20edd94bc3ec20a23e27e5a99d4e67a4aab61d5",
+          "balance": 70687.25514320815
+        },
+        {
+          "address": "0xaead6593710bf28bf4848b24f4ed1f130773d7e6",
+          "balance": 51911.920392855136
+        }
+      ],
+      "concentration": {
+        "top5": 93.3,
+        "top10": 99.0
+      },
+      "metrics": {
+        "name": "Kleros Arbitrum",
+        "sample_size": 47,
+        "total": 16067577.07209418,
+        "top5_share": 93.31,
+        "top10_share": 99.03,
+        "top20_share": 99.97,
+        "gini": 0.9089,
+        "hhi": 2251.26,
+        "nakamoto": 2,
+        "entropy": 2.4956,
+        "normalized_entropy": 0.4493,
+        "theil": 2.1203
+      }
+    }
+  }
+}
