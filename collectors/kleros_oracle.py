@@ -2,8 +2,10 @@
 Kleros 오라클 데이터 수집 (Etherscan API V2)
 - Ethereum: PNK 토큰 전체 홀더 분포
 - Arbitrum: Kleros v2 Court 스테이킹 분포
+- Arbitrum: Kleros v2 Court 분쟁 이벤트 (DisputeCreation, Draw, VoteCast, Ruling 등)
 """
 
+import json
 import os
 import time
 from datetime import datetime
@@ -158,6 +160,113 @@ def analyze_holder_concentration(holders_df: pd.DataFrame, chain_name: str) -> d
     }
 
 
+# Kleros v2 Court 컨트랙트 (Arbitrum)
+KLEROS_CORE = "0x991d2df165670b9cac3B022f4B68D65b664222ea"
+DISPUTE_KIT_CLASSIC = "0x70B464be85A547144C72485eBa2577E5D3A45421"
+ARBITRUM_CHAIN_ID = 42161
+
+# topic0 해시 → 이벤트 이름 매핑 (keccak256 of event signatures)
+KLEROS_EVENT_NAMES = {
+    # KlerosCore events
+    "0x141dfc18aa6a56fc816f44f0e9e2f1ebc92b15ab167770e17db5b084c10ed995": "DisputeCreation",
+    "0x6119cf536152c11e0a9a6c22f3953ce4ecc93ee54fa72ffa326ffabded21509b": "Draw",
+    "0x394027a5fa6e098a1191094d1719d6929b9abc535fcc0c8f448d6a4e75622276": "Ruling",
+    "0x4e6f5cf43b95303e86aee81683df63992061723a829ee012db21dad388756b91": "NewPeriod",
+    "0xa5d41b970d849372be1da1481ffd78d162bfe57a7aa2fe4e5fb73481fa5ac24f": "AppealPossible",
+    "0x8975b837fe0d18616c65abb8b843726a32b552ee4feca009944fa658bbb282e7": "TokenAndETHShift",
+    # DisputeKitClassic events
+    "0xa000893c71384499023d2d7b21234f7b9e80c78e0330f357dcd667ff578bd3a4": "VoteCast",
+    "0xd3106f74c2d30a4b9230e756a3e78bde53865d40f6af4c479bb010ebaab58108": "DisputeCreation",
+}
+
+# Kleros v2 Court 배포 블록 (Arbitrum, 2024-11-07)
+KLEROS_COURT_START_BLOCK = 272000000
+BLOCK_CHUNK_SIZE = 5000000  # Arbitrum 블록이 빠르므로 큰 청크
+
+
+def collect_court_events_for_contract(contract_address: str, contract_name: str) -> list:
+    """특정 컨트랙트의 이벤트를 블록 범위 페이징으로 수집"""
+
+    print(f"  [{contract_name}] 이벤트 수집 중...")
+
+    # Arbitrum 최신 블록 조회
+    latest_result = etherscan_request({
+        "module": "proxy",
+        "action": "eth_blockNumber",
+    }, ARBITRUM_CHAIN_ID)
+    latest_block = int(latest_result.get("result", "0x0"), 16)
+    print(f"  최신 블록: {latest_block:,}")
+
+    all_records = []
+    from_block = KLEROS_COURT_START_BLOCK
+
+    while from_block <= latest_block:
+        to_block = min(from_block + BLOCK_CHUNK_SIZE - 1, latest_block)
+
+        page = 1
+        while True:
+            params = {
+                "module": "logs",
+                "action": "getLogs",
+                "address": contract_address,
+                "fromBlock": from_block,
+                "toBlock": to_block,
+                "page": page,
+                "offset": 1000,
+            }
+
+            result = etherscan_request(params, ARBITRUM_CHAIN_ID)
+
+            if result.get("status") != "1":
+                break
+
+            events = result.get("result", [])
+            if not events:
+                break
+
+            for event in events:
+                topic0 = event.get("topics", [None])[0]
+                all_records.append({
+                    "block_number": int(event.get("blockNumber", "0"), 16),
+                    "timestamp": int(event.get("timeStamp", "0"), 16),
+                    "tx_hash": event.get("transactionHash"),
+                    "contract": contract_name,
+                    "topic0": topic0,
+                    "event_name": KLEROS_EVENT_NAMES.get(topic0, "Unknown"),
+                    "topics": json.dumps(event.get("topics", [])),
+                    "data": event.get("data"),
+                })
+
+            if len(events) < 1000:
+                break
+            page += 1
+            time.sleep(0.25)
+
+        print(f"  [{contract_name}] Collected up to block {to_block:,}, total events: {len(all_records):,}")
+        from_block = to_block + 1
+        time.sleep(0.25)
+
+    return all_records
+
+
+def collect_court_events() -> pd.DataFrame:
+    """Kleros v2 Court 분쟁 이벤트 수집 (KlerosCore + DisputeKitClassic)"""
+
+    print("\n  Court 분쟁 이벤트 수집 시작...")
+
+    records = []
+    records.extend(collect_court_events_for_contract(KLEROS_CORE, "KlerosCore"))
+    records.extend(collect_court_events_for_contract(DISPUTE_KIT_CLASSIC, "DisputeKitClassic"))
+
+    df = pd.DataFrame(records)
+    if not df.empty:
+        df["datetime"] = pd.to_datetime(df["timestamp"], unit="s")
+        df = df.sort_values("block_number").reset_index(drop=True)
+
+    print(f"  Court 이벤트 총 {len(df):,}건 수집 완료")
+    return df
+
+
 def save_data(df: pd.DataFrame, name: str):
     """Parquet으로 저장"""
     path = DATA_DIR / f"{name}.parquet"
@@ -199,6 +308,12 @@ def main():
         stats_df = pd.DataFrame(all_stats)
         stats_df["collected_at"] = datetime.now().isoformat()
         save_data(stats_df, "kleros_holder_stats")
+
+    # Court 분쟁 이벤트 수집
+    print(f"\n[{len(CHAINS) + 1}/{len(CHAINS) + 1}] Court 분쟁 이벤트 수집 중...")
+    court_df = collect_court_events()
+    if not court_df.empty:
+        save_data(court_df, "kleros_court_events")
 
     print("\n=== 수집 완료 ===")
 

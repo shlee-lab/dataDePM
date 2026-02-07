@@ -88,11 +88,68 @@ def load_data():
         "metrics": uma_metrics
     }
 
-    # UMA 투표 이벤트
+    # UMA 투표 이벤트 (확장 통계)
     events_df = pd.read_parquet(DATA_DIR / "uma_voting_events.parquet")
-    data["uma_events"] = {
+    uma_events_stats = {
         "total_events": len(events_df),
+        "unique_tx": int(events_df["tx_hash"].nunique()) if "tx_hash" in events_df.columns else 0,
     }
+
+    if "datetime" in events_df.columns and not events_df.empty:
+        uma_events_stats["date_range"] = [
+            events_df["datetime"].min().strftime("%Y-%m-%d"),
+            events_df["datetime"].max().strftime("%Y-%m-%d"),
+        ]
+
+    if "event_name" in events_df.columns:
+        by_type = events_df["event_name"].value_counts().to_dict()
+        uma_events_stats["by_type"] = {k: int(v) for k, v in by_type.items()}
+        # 투표 관련 트랜잭션의 고유 발신자 근사 (unique tx_hash for vote events)
+        vote_events = events_df[events_df["event_name"].isin(["VoteCommitted", "VoteRevealed", "EncryptedVote"])]
+        uma_events_stats["unique_voters_tx"] = int(vote_events["tx_hash"].nunique()) if not vote_events.empty else 0
+
+    data["uma_events"] = uma_events_stats
+
+    # UMA 투표 이벤트 CSV export
+    if not events_df.empty:
+        csv_cols = [c for c in ["block_number", "timestamp", "tx_hash", "event_name", "topic0", "data", "datetime"] if c in events_df.columns]
+        events_df[csv_cols].to_csv(SITE_DIR / "uma_voting_events.csv", index=False)
+        print(f"  CSV 저장: site/uma_voting_events.csv ({len(events_df)} rows)")
+
+    # Kleros Court 이벤트
+    kleros_court_path = DATA_DIR / "kleros_court_events.parquet"
+    if kleros_court_path.exists():
+        court_df = pd.read_parquet(kleros_court_path)
+        court_stats = {
+            "total_events": len(court_df),
+            "disputes_created": int((court_df["event_name"] == "DisputeCreation").sum()) if "event_name" in court_df.columns else 0,
+            "juror_draws": int((court_df["event_name"] == "Draw").sum()) if "event_name" in court_df.columns else 0,
+            "votes_cast": int((court_df["event_name"] == "VoteCast").sum()) if "event_name" in court_df.columns else 0,
+            "rulings": int((court_df["event_name"] == "Ruling").sum()) if "event_name" in court_df.columns else 0,
+            "appeals": int(court_df["event_name"].isin(["AppealDecision", "AppealPossible"]).sum()) if "event_name" in court_df.columns else 0,
+            "new_period": int((court_df["event_name"] == "NewPeriod").sum()) if "event_name" in court_df.columns else 0,
+            "token_shifts": int((court_df["event_name"] == "TokenAndETHShift").sum()) if "event_name" in court_df.columns else 0,
+        }
+
+        if "tx_hash" in court_df.columns:
+            # Draw 이벤트의 고유 주소 수로 unique jurors 근사
+            draw_events = court_df[court_df["event_name"] == "Draw"] if "event_name" in court_df.columns else pd.DataFrame()
+            court_stats["unique_jurors"] = int(draw_events["tx_hash"].nunique()) if not draw_events.empty else 0
+
+        if "datetime" in court_df.columns and not court_df.empty:
+            court_stats["date_range"] = [
+                court_df["datetime"].min().strftime("%Y-%m-%d"),
+                court_df["datetime"].max().strftime("%Y-%m-%d"),
+            ]
+
+        data["kleros_court"] = court_stats
+
+        # Kleros Court CSV export
+        csv_cols = [c for c in ["block_number", "timestamp", "tx_hash", "contract", "event_name", "topic0", "data", "datetime"] if c in court_df.columns]
+        court_df[csv_cols].to_csv(SITE_DIR / "kleros_court_events.csv", index=False)
+        print(f"  CSV 저장: site/kleros_court_events.csv ({len(court_df)} rows)")
+    else:
+        data["kleros_court"] = {"total_events": 0}
 
     # Kleros 홀더 데이터 + 집중도 지표
     kleros_df = pd.read_parquet(DATA_DIR / "kleros_holders.parquet")
@@ -136,6 +193,32 @@ def load_data():
 
 def build_html(data):
     """HTML 페이지 생성"""
+
+    # Pre-compute values for Section 4 (f-string에서 dict.get() 체이닝 불가)
+    uma_by_type = data["uma_events"].get("by_type", {})
+    uma_date_range = data["uma_events"].get("date_range", ["?", "?"])
+    uma_price_req = uma_by_type.get("PriceRequestAdded", 0)
+    uma_vote_committed = uma_by_type.get("VoteCommitted", 0)
+    uma_encrypted_vote = uma_by_type.get("EncryptedVote", 0)
+    uma_vote_revealed = uma_by_type.get("VoteRevealed", 0)
+    uma_price_resolved = uma_by_type.get("PriceResolved", 0)
+    uma_rewards = uma_by_type.get("RewardsRetrieved", 0)
+    uma_reveal_rate = uma_vote_revealed / max(uma_vote_committed, 1) * 100
+    uma_votes_per_req = uma_vote_committed / max(uma_price_req, 1)
+
+    kc = data.get("kleros_court", {})
+    kc_date_range = kc.get("date_range", ["?", "?"])
+    kc_disputes = kc.get("disputes_created", 0)
+    kc_draws = kc.get("juror_draws", 0)
+    kc_votes = kc.get("votes_cast", 0)
+    kc_rulings = kc.get("rulings", 0)
+    kc_appeals = kc.get("appeals", 0)
+    kc_jurors = kc.get("unique_jurors", 0)
+    kc_total = kc.get("total_events", 0)
+    kc_new_period = kc.get("new_period", 0)
+    kc_shifts = kc.get("token_shifts", 0)
+    kc_draws_per_dispute = kc_draws / max(kc_disputes, 1)
+    kc_votes_per_dispute = kc_votes / max(kc_disputes, 1)
 
     html = f'''<!DOCTYPE html>
 <html lang="ko">
@@ -313,7 +396,9 @@ def build_html(data):
             <div class="download-links" style="justify-content: center; margin-top: 20px;">
                 <a href="polymarket_markets.csv" download>📥 Polymarket 마켓 데이터</a>
                 <a href="uma_holders.csv" download>📥 UMA 홀더 데이터</a>
+                <a href="uma_voting_events.csv" download>📥 UMA 투표 이벤트</a>
                 <a href="kleros_holders.csv" download>📥 Kleros 홀더 데이터</a>
+                <a href="kleros_court_events.csv" download>📥 Kleros Court 이벤트</a>
             </div>
         </header>
 
@@ -573,6 +658,107 @@ def build_html(data):
             </table>
         </section>
 
+        <!-- 4. 분쟁 투표 활동 분석 -->
+        <section class="section">
+            <h2><span class="section-number">4</span> 분쟁 투표 활동 분석</h2>
+
+            <h3>UMA 투표 이벤트</h3>
+            <p style="color: #888; margin-bottom: 20px;">UMA Voting 컨트랙트의 전체 이벤트 로그 ({uma_date_range[0]} ~ {uma_date_range[1]})</p>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">{data["uma_events"]["total_events"]:,}</div>
+                    <div class="stat-label">전체 이벤트</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{data["uma_events"].get("unique_tx", 0):,}</div>
+                    <div class="stat-label">고유 트랜잭션</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{uma_price_req:,}</div>
+                    <div class="stat-label">가격 요청 (분쟁 라운드)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value warning">{data["uma_events"].get("unique_voters_tx", 0):,}</div>
+                    <div class="stat-label">고유 투표 트랜잭션</div>
+                </div>
+            </div>
+
+            <div class="oracle-grid">
+                <div class="chart-container">
+                    <div class="chart-title">UMA 이벤트 유형별 분포</div>
+                    <canvas id="umaEventsChart" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">UMA 투표 파이프라인</div>
+                    <canvas id="umaFunnelChart" height="200"></canvas>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h4>UMA 투표 참여 분석</h4>
+                <p>{uma_price_req:,}건의 가격 요청에 대해 {uma_vote_committed:,}건의 투표 커밋과 {uma_vote_revealed:,}건의 투표 공개가 이루어졌습니다.
+                커밋 대비 공개 비율은 {uma_reveal_rate:.1f}%로, 일부 투표자는 커밋 후 공개를 하지 않고 있습니다.
+                요청당 평균 {uma_votes_per_req:.1f}건의 투표가 이루어지며, 소수의 참여자에 의존하는 구조입니다.</p>
+            </div>
+
+            <h3 style="margin-top: 50px;">Kleros v2 Court 분쟁 이벤트</h3>
+            <p style="color: #888; margin-bottom: 20px;">KlerosCore + DisputeKitClassic 컨트랙트 (Arbitrum, {kc_date_range[0]} ~ {kc_date_range[1]})</p>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">{kc_disputes:,}</div>
+                    <div class="stat-label">분쟁 생성</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{kc_draws:,}</div>
+                    <div class="stat-label">배심원 선발 (Draw)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value warning">{kc_votes:,}</div>
+                    <div class="stat-label">투표 (VoteCast)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{kc_rulings:,}</div>
+                    <div class="stat-label">최종 판결 (Ruling)</div>
+                </div>
+            </div>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">{kc_appeals:,}</div>
+                    <div class="stat-label">항소 가능 통보</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value danger">{kc_jurors:,}</div>
+                    <div class="stat-label">고유 배심원 (추정)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{kc_total:,}</div>
+                    <div class="stat-label">전체 이벤트</div>
+                </div>
+            </div>
+
+            <div class="oracle-grid">
+                <div class="chart-container">
+                    <div class="chart-title">Kleros Court 이벤트 유형별 분포</div>
+                    <canvas id="klerosEventsChart" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Kleros 분쟁 파이프라인</div>
+                    <canvas id="klerosFunnelChart" height="200"></canvas>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h4>Kleros Court 분쟁 해결 패턴</h4>
+                <p>총 {kc_disputes:,}건의 분쟁이 생성되어 {kc_rulings:,}건의 최종 판결이 내려졌습니다.
+                분쟁당 평균 {kc_draws_per_dispute:.1f}명의 배심원이 선발되고
+                {kc_votes_per_dispute:.1f}건의 투표가 이루어집니다.
+                추정 고유 배심원 수 {kc_jurors:,}명은 전체 PNK 스테이커 대비 극소수로, 실질적 분쟁 해결 권한이 소수에게 집중되어 있음을 보여줍니다.</p>
+            </div>
+        </section>
+
         <footer>
             <p>데이터 수집일: {pd.Timestamp.now().strftime("%Y-%m-%d")}</p>
             <p>Polymarket API & Etherscan API 기반</p>
@@ -681,6 +867,140 @@ def build_html(data):
                     legend: {{ labels: {{ color: '#ccc' }} }},
                     title: {{ display: true, text: '값이 높을수록 집중도 높음 (나카모토 계수 제외)', color: '#666' }}
                 }}
+            }}
+        }});
+
+        // UMA 이벤트 유형 도넛 차트
+        new Chart(document.getElementById('umaEventsChart'), {{
+            type: 'doughnut',
+            data: {{
+                labels: {json.dumps(list(uma_by_type.keys()))},
+                datasets: [{{
+                    data: {json.dumps(list(uma_by_type.values()))},
+                    backgroundColor: [
+                        'rgba(255, 107, 107, 0.8)',
+                        'rgba(255, 165, 0, 0.8)',
+                        'rgba(100, 200, 255, 0.8)',
+                        'rgba(144, 238, 144, 0.8)',
+                        'rgba(186, 147, 255, 0.8)',
+                        'rgba(255, 218, 121, 0.8)',
+                        'rgba(150, 150, 150, 0.8)'
+                    ],
+                    borderWidth: 0
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                plugins: {{
+                    legend: {{ position: 'right', labels: {{ color: '#ccc', font: {{ size: 11 }} }} }}
+                }}
+            }}
+        }});
+
+        // UMA 투표 파이프라인 차트
+        new Chart(document.getElementById('umaFunnelChart'), {{
+            type: 'bar',
+            data: {{
+                labels: ['PriceRequest', 'VoteCommitted', 'EncryptedVote', 'VoteRevealed', 'PriceResolved', 'RewardsRetrieved'],
+                datasets: [{{
+                    label: '이벤트 수',
+                    data: [
+                        {uma_price_req},
+                        {uma_vote_committed},
+                        {uma_encrypted_vote},
+                        {uma_vote_revealed},
+                        {uma_price_resolved},
+                        {uma_rewards}
+                    ],
+                    backgroundColor: [
+                        'rgba(186, 147, 255, 0.8)',
+                        'rgba(255, 107, 107, 0.8)',
+                        'rgba(255, 165, 0, 0.8)',
+                        'rgba(100, 200, 255, 0.8)',
+                        'rgba(144, 238, 144, 0.8)',
+                        'rgba(255, 218, 121, 0.8)'
+                    ],
+                    borderWidth: 0
+                }}]
+            }},
+            options: {{
+                indexAxis: 'y',
+                responsive: true,
+                scales: {{
+                    x: {{ beginAtZero: true, grid: {{ color: '#333' }}, ticks: {{ color: '#888' }} }},
+                    y: {{ grid: {{ display: false }}, ticks: {{ color: '#ccc' }} }}
+                }},
+                plugins: {{ legend: {{ display: false }} }}
+            }}
+        }});
+
+        // Kleros 이벤트 유형 도넛 차트
+        new Chart(document.getElementById('klerosEventsChart'), {{
+            type: 'doughnut',
+            data: {{
+                labels: ['DisputeCreation', 'Draw', 'VoteCast', 'NewPeriod', 'Ruling', 'AppealPossible', 'TokenAndETHShift'],
+                datasets: [{{
+                    data: [
+                        {kc_disputes},
+                        {kc_draws},
+                        {kc_votes},
+                        {kc_new_period},
+                        {kc_rulings},
+                        {kc_appeals},
+                        {kc_shifts}
+                    ],
+                    backgroundColor: [
+                        'rgba(255, 107, 107, 0.8)',
+                        'rgba(255, 165, 0, 0.8)',
+                        'rgba(100, 200, 255, 0.8)',
+                        'rgba(186, 147, 255, 0.8)',
+                        'rgba(144, 238, 144, 0.8)',
+                        'rgba(255, 218, 121, 0.8)',
+                        'rgba(150, 150, 150, 0.8)'
+                    ],
+                    borderWidth: 0
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                plugins: {{
+                    legend: {{ position: 'right', labels: {{ color: '#ccc', font: {{ size: 11 }} }} }}
+                }}
+            }}
+        }});
+
+        // Kleros 분쟁 파이프라인 차트
+        new Chart(document.getElementById('klerosFunnelChart'), {{
+            type: 'bar',
+            data: {{
+                labels: ['DisputeCreation', 'Draw (배심원)', 'VoteCast (투표)', 'Ruling (판결)', 'Appeal (항소)'],
+                datasets: [{{
+                    label: '이벤트 수',
+                    data: [
+                        {kc_disputes},
+                        {kc_draws},
+                        {kc_votes},
+                        {kc_rulings},
+                        {kc_appeals}
+                    ],
+                    backgroundColor: [
+                        'rgba(255, 107, 107, 0.8)',
+                        'rgba(255, 165, 0, 0.8)',
+                        'rgba(100, 200, 255, 0.8)',
+                        'rgba(144, 238, 144, 0.8)',
+                        'rgba(255, 218, 121, 0.8)'
+                    ],
+                    borderWidth: 0
+                }}]
+            }},
+            options: {{
+                indexAxis: 'y',
+                responsive: true,
+                scales: {{
+                    x: {{ beginAtZero: true, grid: {{ color: '#333' }}, ticks: {{ color: '#888' }} }},
+                    y: {{ grid: {{ display: false }}, ticks: {{ color: '#ccc' }} }}
+                }},
+                plugins: {{ legend: {{ display: false }} }}
             }}
         }});
     </script>

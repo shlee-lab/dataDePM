@@ -182,36 +182,36 @@
     }
   ],
   "uma_holders": {
-    "total_holders": 62,
-    "total_balance": 44744811.70387039,
+    "total_holders": 61,
+    "total_balance": 44733267.23798796,
     "top_holders": [
       {
         "address": "0x004395edb43efca9885cedad51ec9faf93bd34ac",
-        "balance": 33255660.223656178
+        "balance": 33267319.23432134
       },
       {
         "address": "0x28c6c06298d514db089934071355e5743bf21d60",
-        "balance": 2670257.32683139
+        "balance": 2724340.0110977325
       },
       {
         "address": "0x5ee8dd3eefd8dbe1b019e312bce563ff6d7d039e",
-        "balance": 2106092.4676923095
+        "balance": 1984304.3897040496
       },
       {
         "address": "0xa9d1e08c7793af67e9d92fe308d5697fb81d3e43",
-        "balance": 1273270.6218290026
+        "balance": 1149966.2180785825
       },
       {
         "address": "0x91d40e4818f4d4c57b4578d9eca6afc92ac8debe",
-        "balance": 855520.6789578418
+        "balance": 861126.7697761517
       },
       {
         "address": "0xf89d7b9c864f589bbf53a82105107622b35eaa40",
-        "balance": 806980.6121691492
+        "balance": 790073.2434195492
       },
       {
         "address": "0xa5946a2c7a6c4232224b89a696ae51879bf5aed1",
-        "balance": 586753.422282
+        "balance": 590339.65872
       },
       {
         "address": "0xc80afd311c9626528de66d86814770361fe92416",
@@ -219,56 +219,86 @@
       },
       {
         "address": "0xb334a61a6209f14b5fa5f1684a4ed7621f66e1ef",
-        "balance": 372838.6041331164
+        "balance": 386074.16113311634
       },
       {
         "address": "0xab782bc7d4a2b306825de5a7730034f8f63ee1bc",
-        "balance": 275418.3212764215
+        "balance": 270742.1281171915
       }
     ],
     "concentration": {
-      "top5": 89.8,
-      "top10": 95.2,
-      "top20": 98.8
+      "top5": 89.4,
+      "top10": 94.9,
+      "top20": 98.4
     },
     "metrics": {
       "name": "UMA",
-      "sample_size": 62,
-      "total": 44744811.70387039,
-      "top5_share": 89.76,
-      "top10_share": 95.23,
-      "top20_share": 98.8,
-      "gini": 0.9373,
-      "hhi": 5601.87,
+      "sample_size": 61,
+      "total": 44733267.23798796,
+      "top5_share": 89.39,
+      "top10_share": 94.86,
+      "top20_share": 98.45,
+      "gini": 0.9337,
+      "hhi": 5606.19,
       "nakamoto": 1,
-      "entropy": 1.7813,
-      "normalized_entropy": 0.2992,
-      "theil": 2.8924
+      "entropy": 1.7974,
+      "normalized_entropy": 0.3031,
+      "theil": 2.865
     }
   },
   "uma_events": {
-    "total_events": 1000
+    "total_events": 56283,
+    "unique_tx": 16863,
+    "date_range": [
+      "2021-02-17",
+      "2025-03-12"
+    ],
+    "by_type": {
+      "VoteCommitted": 14902,
+      "EncryptedVote": 14874,
+      "VoteRevealed": 13396,
+      "RewardsRetrieved": 12628,
+      "PriceRequestAdded": 239,
+      "PriceResolved": 239,
+      "OwnershipTransferred": 5
+    },
+    "unique_voters_tx": 12684
+  },
+  "kleros_court": {
+    "total_events": 3502,
+    "disputes_created": 233,
+    "juror_draws": 692,
+    "votes_cast": 521,
+    "rulings": 118,
+    "appeals": 118,
+    "new_period": 363,
+    "token_shifts": 1383,
+    "unique_jurors": 163,
+    "date_range": [
+      "2024-11-07",
+      "2025-12-27"
+    ]
   },
   "kleros": {
     "ethereum": {
-      "total_holders": 44,
-      "total_balance": 319896372.6401379,
+      "total_holders": 42,
+      "total_balance": 317757257.2420331,
       "top_holders": [
         {
           "address": "0x86ead908fb5d6f900ff109c9e26f79300f99271a",
-          "balance": 114824109.99003409
+          "balance": 115551656.02726807
         },
         {
           "address": "0x000000000004444c5dc75cb358380d2e3de08a90",
-          "balance": 55630587.81435978
+          "balance": 55931185.06583781
         },
         {
           "address": "0x88ad09518695c6c3712ac10a214be5109a655671",
-          "balance": 42903669.460713044
+          "balance": 42950645.58717404
         },
         {
           "address": "0xdbc3088dfebc3cc6a84b0271dade2696db00af38",
-          "balance": 28078210.65774664
+          "balance": 28072421.63461199
         },
         {
           "address": "0xa3a7b6f88361f48403514059f1f16c8e78d60eec",
@@ -280,11 +310,11 @@
         },
         {
           "address": "0x77134cbc06cb00b66f4c7e623d5fdbf6777635ec",
-          "balance": 13469900.490051512
+          "balance": 12582512.065193625
         },
         {
           "address": "0x49f3847a3ae8b37e2d4e469aab3c5d64d54db860",
-          "balance": 10734572.367112484
+          "balance": 10795818.225592515
         },
         {
           "address": "0x954d56851b597d27b245fd66e5bd48e0425d063f",
@@ -292,26 +322,26 @@
         },
         {
           "address": "0x9762c600a39bda3359f50a1fb1f90945cead379d",
-          "balance": 3555595.3025061507
+          "balance": 3559634.9817187614
         }
       ],
       "concentration": {
-        "top5": 82.9,
-        "top10": 98.5
+        "top5": 83.8,
+        "top10": 99.2
       },
       "metrics": {
         "name": "Kleros Ethereum",
-        "sample_size": 44,
-        "total": 319896372.6401379,
-        "top5_share": 82.86,
-        "top10_share": 98.48,
-        "top20_share": 99.99,
-        "gini": 0.8781,
-        "hhi": 1959.93,
+        "sample_size": 42,
+        "total": 317757257.2420331,
+        "top5_share": 83.75,
+        "top10_share": 99.22,
+        "top20_share": 100.0,
+        "gini": 0.8764,
+        "hhi": 2004.09,
         "nakamoto": 2,
-        "entropy": 2.8329,
-        "normalized_entropy": 0.5189,
-        "theil": 1.8206
+        "entropy": 2.7785,
+        "normalized_entropy": 0.5153,
+        "theil": 1.8117
       }
     },
     "arbitrum": {

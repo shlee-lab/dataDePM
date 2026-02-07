@@ -4,6 +4,7 @@ UMA 오라클 데이터 수집 (Etherscan API)
 - 투표 컨트랙트 이벤트
 """
 
+import json
 import os
 import time
 from datetime import datetime
@@ -124,42 +125,88 @@ def collect_token_holders() -> pd.DataFrame:
     return df
 
 
+# topic0 해시 → 이벤트 이름 매핑 (keccak256 of event signatures)
+UMA_EVENT_NAMES = {
+    "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": "OwnershipTransferred",
+    "0x5d80f93c41e95cacea0b9ce9bb825092d709fa503a70bb26ea3f536bf16946bd": "PriceRequestAdded",
+    "0x6beca723245953d9ed92ae4d320d4772838e841161bfff12c78ae4268df525eb": "VoteCommitted",
+    "0x0296c44e55ad4a025c9701a71c746d4275d63dfe301e390a7429551010a8fea1": "EncryptedVote",
+    "0x3fad5d37ee1be2f58ff1735699121a8ead73c3b70d02fc06d07b0db29854d3b4": "VoteRevealed",
+    "0xb1f1bf5aec084730c2c09f66ae2099185eaf6f951ddc113a19aa886a9f5e71b7": "PriceResolved",
+    "0x6fb9765a6e4b0dd2aaedad44f9b165a2a64a53ce67a6ec812075faa9220d41bc": "RewardsRetrieved",
+}
+
+# UMA Voting 첫 이벤트 블록 (2021-02-17)
+UMA_VOTING_START_BLOCK = 11876839
+# 블록 범위 청크 사이즈
+BLOCK_CHUNK_SIZE = 50000
+
+
 def collect_voting_events() -> pd.DataFrame:
-    """UMA Voting 컨트랙트 이벤트 수집"""
+    """UMA Voting 컨트랙트 이벤트 수집 (블록 범위 페이징)"""
 
-    print("  Voting 컨트랙트 이벤트 수집 중...")
+    print("  Voting 컨트랙트 이벤트 수집 중 (블록 범위 페이징)...")
 
-    # VoteCommitted, VoteRevealed 이벤트 등 수집
-    params = {
-        "module": "logs",
-        "action": "getLogs",
-        "address": UMA_VOTING,
-        "fromBlock": 0,
-        "toBlock": "latest",
-        "page": 1,
-        "offset": 1000
-    }
+    # 현재 최신 블록 번호 조회
+    latest_result = etherscan_request({
+        "module": "proxy",
+        "action": "eth_blockNumber",
+    })
+    latest_block = int(latest_result.get("result", "0x0"), 16)
+    print(f"  최신 블록: {latest_block:,}")
 
-    result = etherscan_request(params)
+    all_records = []
+    from_block = UMA_VOTING_START_BLOCK
 
-    if result.get("status") != "1":
-        print(f"  에러: {result.get('message')}")
-        return pd.DataFrame()
+    while from_block <= latest_block:
+        to_block = min(from_block + BLOCK_CHUNK_SIZE - 1, latest_block)
 
-    events = result.get("result", [])
-    print(f"  {len(events)}개 이벤트 수집됨")
+        # 각 청크 내에서 페이지 반복
+        page = 1
+        while True:
+            params = {
+                "module": "logs",
+                "action": "getLogs",
+                "address": UMA_VOTING,
+                "fromBlock": from_block,
+                "toBlock": to_block,
+                "page": page,
+                "offset": 1000,
+            }
 
-    records = []
-    for event in events:
-        records.append({
-            "block_number": int(event.get("blockNumber", "0"), 16),
-            "timestamp": int(event.get("timeStamp", "0"), 16),
-            "tx_hash": event.get("transactionHash"),
-            "topic0": event.get("topics", [None])[0],
-            "data": event.get("data")
-        })
+            result = etherscan_request(params)
 
-    df = pd.DataFrame(records)
+            if result.get("status") != "1":
+                # "No records found" 등은 정상 — 해당 범위에 이벤트 없음
+                break
+
+            events = result.get("result", [])
+            if not events:
+                break
+
+            for event in events:
+                topic0 = event.get("topics", [None])[0]
+                all_records.append({
+                    "block_number": int(event.get("blockNumber", "0"), 16),
+                    "timestamp": int(event.get("timeStamp", "0"), 16),
+                    "tx_hash": event.get("transactionHash"),
+                    "topic0": topic0,
+                    "event_name": UMA_EVENT_NAMES.get(topic0, "Unknown"),
+                    "topics": json.dumps(event.get("topics", [])),
+                    "data": event.get("data"),
+                })
+
+            # 1,000건 미만이면 다음 청크로
+            if len(events) < 1000:
+                break
+            page += 1
+            time.sleep(0.25)
+
+        print(f"  Collected up to block {to_block:,}, total events: {len(all_records):,}")
+        from_block = to_block + 1
+        time.sleep(0.25)  # Rate limit 방지
+
+    df = pd.DataFrame(all_records)
     if not df.empty:
         df["datetime"] = pd.to_datetime(df["timestamp"], unit="s")
 
