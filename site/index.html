@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>예측시장 구조적 리스크 분석</title>
+    <title>Prediction Market Structural Risk Analysis</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -14,6 +14,23 @@
             color: #e0e0e0;
             line-height: 1.6;
         }
+        body.lang-en .lang-ko { display: none; }
+        body.lang-ko .lang-en { display: none; }
+        .lang-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #252525;
+            color: #ccc;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            z-index: 1000;
+            transition: background 0.2s;
+        }
+        .lang-toggle:hover { background: #333; }
         .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
         header { text-align: center; margin-bottom: 60px; padding: 40px 0; border-bottom: 1px solid #333; }
         h1 {
@@ -167,89 +184,94 @@
     </style>
 </head>
 <body>
+    <button id="langToggle" class="lang-toggle" onclick="toggleLang()">한국어</button>
     <div class="container">
         <header>
-            <h1>예측시장 구조적 리스크 분석</h1>
-            <p class="subtitle">Polymarket, UMA & Kleros Oracle 데이터 기반</p>
+            <h1><span class="lang-ko">예측시장 구조적 리스크 분석</span><span class="lang-en">Prediction Market Structural Risk Analysis</span></h1>
+            <p class="subtitle"><span class="lang-ko">Polymarket, UMA &amp; Kleros Oracle 데이터 기반</span><span class="lang-en">Based on Polymarket, UMA &amp; Kleros Oracle Data</span></p>
             <div class="download-links" style="justify-content: center; margin-top: 20px;">
-                <a href="polymarket_markets.csv" download>📥 Polymarket 마켓 데이터</a>
-                <a href="uma_holders.csv" download>📥 UMA 홀더 데이터</a>
-                <a href="uma_voting_events.csv" download>📥 UMA 투표 이벤트</a>
-                <a href="kleros_holders.csv" download>📥 Kleros 홀더 데이터</a>
-                <a href="kleros_court_events.csv" download>📥 Kleros Court 이벤트</a>
+                <a href="polymarket_markets.csv" download>📥 <span class="lang-ko">Polymarket 마켓 데이터</span><span class="lang-en">Polymarket Market Data</span></a>
+                <a href="uma_holders.csv" download>📥 <span class="lang-ko">UMA 홀더 데이터</span><span class="lang-en">UMA Holder Data</span></a>
+                <a href="uma_voting_events.csv" download>📥 <span class="lang-ko">UMA 투표 이벤트</span><span class="lang-en">UMA Voting Events</span></a>
+                <a href="kleros_holders.csv" download>📥 <span class="lang-ko">Kleros 홀더 데이터</span><span class="lang-en">Kleros Holder Data</span></a>
+                <a href="kleros_court_events.csv" download>📥 <span class="lang-ko">Kleros Court 이벤트</span><span class="lang-en">Kleros Court Events</span></a>
             </div>
         </header>
 
         <!-- 1. 유동성 리스크 -->
         <section class="section">
-            <h2><span class="section-number">1</span> 유동성 리스크</h2>
+            <h2><span class="section-number">1</span> <span class="lang-ko">유동성 리스크</span><span class="lang-en">Liquidity Risk</span></h2>
 
             <div class="stat-grid">
                 <div class="stat-card">
                     <div class="stat-value">5,000</div>
-                    <div class="stat-label">전체 마켓 수</div>
+                    <div class="stat-label"><span class="lang-ko">전체 마켓 수</span><span class="lang-en">Total Markets</span></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">1,434</div>
-                    <div class="stat-label">유동성 $10K+ 마켓</div>
+                    <div class="stat-label"><span class="lang-ko">유동성 $10K+ 마켓</span><span class="lang-en">Markets with $10K+ Liquidity</span></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value warning">28.7%</div>
-                    <div class="stat-label">$10K+ 비율</div>
+                    <div class="stat-label"><span class="lang-ko">$10K+ 비율</span><span class="lang-en">$10K+ Ratio</span></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">$264.0M</div>
-                    <div class="stat-label">총 유동성</div>
+                    <div class="stat-label"><span class="lang-ko">총 유동성</span><span class="lang-en">Total Liquidity</span></div>
                 </div>
             </div>
 
             <div class="chart-container">
-                <div class="chart-title">유동성 집중도: 상위 N개 마켓 점유율</div>
+                <div class="chart-title"><span class="lang-ko">유동성 집중도: 상위 N개 마켓 점유율</span><span class="lang-en">Liquidity Concentration: Top N Market Share</span></div>
                 <canvas id="concentrationChart" height="100"></canvas>
             </div>
 
             <div class="chart-container">
-                <div class="chart-title">유동성 분포 (마켓 수)</div>
+                <div class="chart-title"><span class="lang-ko">유동성 분포 (마켓 수)</span><span class="lang-en">Liquidity Distribution (Market Count)</span></div>
                 <canvas id="distributionChart" height="100"></canvas>
             </div>
 
             <div class="insight-box">
-                <h4>핵심 인사이트</h4>
-                <p>전체 5,000개 마켓 중 유동성 $10K 이상인 마켓은 1,434개 (28.7%)에 불과합니다.
+                <h4><span class="lang-ko">핵심 인사이트</span><span class="lang-en">Key Insight</span></h4>
+                <p class="lang-ko">전체 5,000개 마켓 중 유동성 $10K 이상인 마켓은 1,434개 (28.7%)에 불과합니다.
                 상위 10개 마켓이 전체 거래량의 11.6%를 차지하며, 대부분의 마켓에서는 원하는 가격에 베팅하기 어렵습니다.</p>
+                <p class="lang-en">Of the total 5,000 markets, only 1,434 (28.7%) have liquidity above $10K.
+                The top 10 markets account for 11.6% of total volume, making it difficult to place bets at desired prices in most markets.</p>
             </div>
         </section>
 
         <!-- 2. 시장 조작 리스크 -->
         <section class="section">
-            <h2><span class="section-number">2</span> 시장 조작 리스크</h2>
+            <h2><span class="section-number">2</span> <span class="lang-ko">시장 조작 리스크</span><span class="lang-en">Market Manipulation Risk</span></h2>
 
             <div class="stat-grid">
                 <div class="stat-card">
                     <div class="stat-value danger">71.3%</div>
-                    <div class="stat-label">조작 취약 마켓 비율</div>
+                    <div class="stat-label"><span class="lang-ko">조작 취약 마켓 비율</span><span class="lang-en">Manipulation-Vulnerable Ratio</span></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value warning">6.5%</div>
-                    <div class="stat-label">상위 5개 거래량 점유율</div>
+                    <div class="stat-label"><span class="lang-ko">상위 5개 거래량 점유율</span><span class="lang-en">Top 5 Volume Share</span></div>
                 </div>
             </div>
 
             <div class="insight-box">
-                <h4>유동성-조작 연결고리</h4>
-                <p>유동성이 낮은 마켓(71.3%)은 소액으로도 가격 조작이 가능합니다.
+                <h4><span class="lang-ko">유동성-조작 연결고리</span><span class="lang-en">Liquidity-Manipulation Link</span></h4>
+                <p class="lang-ko">유동성이 낮은 마켓(71.3%)은 소액으로도 가격 조작이 가능합니다.
                 이는 wash trading, 자전거래 등의 조작에 취약하며, 조작이 의심되면 참여자가 줄어 유동성이 더 낮아지는 악순환이 발생합니다.</p>
+                <p class="lang-en">Low-liquidity markets (71.3%) can be price-manipulated with small amounts.
+                They are vulnerable to wash trading and self-dealing. When manipulation is suspected, participants withdraw, further reducing liquidity in a vicious cycle.</p>
             </div>
 
-            <h3>거래량 상위 20개 마켓</h3>
+            <h3><span class="lang-ko">거래량 상위 20개 마켓</span><span class="lang-en">Top 20 Markets by Volume</span></h3>
             <table>
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>마켓</th>
-                        <th>거래량</th>
-                        <th>유동성</th>
-                        <th>카테고리</th>
+                        <th><span class="lang-ko">마켓</span><span class="lang-en">Market</span></th>
+                        <th><span class="lang-ko">거래량</span><span class="lang-en">Volume</span></th>
+                        <th><span class="lang-ko">유동성</span><span class="lang-en">Liquidity</span></th>
+                        <th><span class="lang-ko">카테고리</span><span class="lang-en">Category</span></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -400,25 +422,29 @@
 
         <!-- 3. 오라클 리스크 -->
         <section class="section">
-            <h2><span class="section-number">3</span> 오라클/결정 메커니즘 리스크</h2>
+            <h2><span class="section-number">3</span> <span class="lang-ko">오라클/결정 메커니즘 리스크</span><span class="lang-en">Oracle/Resolution Mechanism Risk</span></h2>
 
             <div class="chart-container">
-                <div class="chart-title">오라클 집중도 비교</div>
+                <div class="chart-title"><span class="lang-ko">오라클 집중도 비교</span><span class="lang-en">Oracle Concentration Comparison</span></div>
                 <canvas id="oracleCompareChart" height="100"></canvas>
             </div>
 
             <dl class="metric-explanation">
-                <dt>지니 계수 (Gini Coefficient)</dt>
-                <dd>0~1 사이 값. 0은 완전 평등, 1은 완전 불평등. 경제학에서 소득 불평등 측정에 표준으로 사용됨. 0.4 이상이면 높은 불평등으로 간주.</dd>
+                <dt><span class="lang-ko">지니 계수 (Gini Coefficient)</span><span class="lang-en">Gini Coefficient</span></dt>
+                <dd class="lang-ko">0~1 사이 값. 0은 완전 평등, 1은 완전 불평등. 경제학에서 소득 불평등 측정에 표준으로 사용됨. 0.4 이상이면 높은 불평등으로 간주.</dd>
+                <dd class="lang-en">Value between 0-1. 0 = perfect equality, 1 = perfect inequality. Standard measure for income inequality in economics. Above 0.4 is considered high inequality.</dd>
 
-                <dt>HHI (Herfindahl-Hirschman Index)</dt>
-                <dd>0~10,000 사이 값. 시장 집중도 측정에 사용되며, 미국 법무부가 독점 심사에 활용. 1,500 미만 = 경쟁적, 1,500~2,500 = 중간 집중, 2,500 이상 = 고도 집중.</dd>
+                <dt><span class="lang-ko">HHI (Herfindahl-Hirschman Index)</span><span class="lang-en">HHI (Herfindahl-Hirschman Index)</span></dt>
+                <dd class="lang-ko">0~10,000 사이 값. 시장 집중도 측정에 사용되며, 미국 법무부가 독점 심사에 활용. 1,500 미만 = 경쟁적, 1,500~2,500 = 중간 집중, 2,500 이상 = 고도 집중.</dd>
+                <dd class="lang-en">Value between 0-10,000. Used by the U.S. DOJ for antitrust analysis. &lt;1,500 = competitive, 1,500-2,500 = moderately concentrated, &gt;2,500 = highly concentrated.</dd>
 
-                <dt>나카모토 계수 (Nakamoto Coefficient)</dt>
-                <dd>시스템의 51%를 장악하는 데 필요한 최소 엔티티 수. 블록체인 탈중앙화 측정의 표준 지표. 값이 낮을수록 중앙화됨 (1 = 사실상 중앙화).</dd>
+                <dt><span class="lang-ko">나카모토 계수 (Nakamoto Coefficient)</span><span class="lang-en">Nakamoto Coefficient</span></dt>
+                <dd class="lang-ko">시스템의 51%를 장악하는 데 필요한 최소 엔티티 수. 블록체인 탈중앙화 측정의 표준 지표. 값이 낮을수록 중앙화됨 (1 = 사실상 중앙화).</dd>
+                <dd class="lang-en">Minimum number of entities needed to control 51% of the system. Standard blockchain decentralization metric. Lower = more centralized (1 = effectively centralized).</dd>
 
-                <dt>정규화 엔트로피 (Normalized Entropy)</dt>
-                <dd>0~1 사이 값. 정보이론의 섀넌 엔트로피를 정규화한 것. 1에 가까울수록 분산됨, 0에 가까울수록 집중됨.</dd>
+                <dt><span class="lang-ko">정규화 엔트로피 (Normalized Entropy)</span><span class="lang-en">Normalized Entropy</span></dt>
+                <dd class="lang-ko">0~1 사이 값. 정보이론의 섀넌 엔트로피를 정규화한 것. 1에 가까울수록 분산됨, 0에 가까울수록 집중됨.</dd>
+                <dd class="lang-en">Value between 0-1. Normalized Shannon entropy from information theory. Closer to 1 = more distributed, closer to 0 = more concentrated.</dd>
             </dl>
 
             <div class="oracle-grid">
@@ -427,17 +453,17 @@
                     <h4>
                         UMA Oracle
                         <a class="contract-link" href="https://etherscan.io/token/0x04Fa0d235C4abf4BcF4787aF4CF447DE572eF828" target="_blank">
-                            📄 컨트랙트
+                            📄 <span class="lang-ko">컨트랙트</span><span class="lang-en">Contract</span>
                         </a>
                     </h4>
                     <div class="metrics">
                         <div class="metric">
                             <div class="metric-value danger">1</div>
-                            <div class="metric-name">나카모토 계수</div>
+                            <div class="metric-name"><span class="lang-ko">나카모토 계수</span><span class="lang-en">Nakamoto Coeff.</span></div>
                         </div>
                         <div class="metric">
                             <div class="metric-value danger">0.9337</div>
-                            <div class="metric-name">지니 계수</div>
+                            <div class="metric-name"><span class="lang-ko">지니 계수</span><span class="lang-en">Gini Coeff.</span></div>
                         </div>
                         <div class="metric">
                             <div class="metric-value warning">5,606</div>
@@ -445,12 +471,16 @@
                         </div>
                         <div class="metric">
                             <div class="metric-value">0.3031</div>
-                            <div class="metric-name">정규화 엔트로피</div>
+                            <div class="metric-name"><span class="lang-ko">정규화 엔트로피</span><span class="lang-en">Norm. Entropy</span></div>
                         </div>
                     </div>
-                    <p style="color: #888; font-size: 0.85rem;">
+                    <p class="lang-ko" style="color: #888; font-size: 0.85rem;">
                         나카모토 계수 1 = 단 1명이 51% 이상 보유.<br>
-                        HHI 5,606 = 고도 집중 (>2,500)
+                        HHI 5,606 = 고도 집중 (&gt;2,500)
+                    </p>
+                    <p class="lang-en" style="color: #888; font-size: 0.85rem;">
+                        Nakamoto Coeff. 1 = only 1 entity holds &gt;51%.<br>
+                        HHI 5,606 = highly concentrated (&gt;2,500)
                     </p>
                 </div>
 
@@ -459,17 +489,17 @@
                     <h4>
                         Kleros v2 (Arbitrum)
                         <a class="contract-link" href="https://arbiscan.io/token/0x330bD769382cFc6d50175903434CCC8D206DCAE5" target="_blank">
-                            📄 컨트랙트
+                            📄 <span class="lang-ko">컨트랙트</span><span class="lang-en">Contract</span>
                         </a>
                     </h4>
                     <div class="metrics">
                         <div class="metric">
                             <div class="metric-value danger">2</div>
-                            <div class="metric-name">나카모토 계수</div>
+                            <div class="metric-name"><span class="lang-ko">나카모토 계수</span><span class="lang-en">Nakamoto Coeff.</span></div>
                         </div>
                         <div class="metric">
                             <div class="metric-value danger">0.9089</div>
-                            <div class="metric-name">지니 계수</div>
+                            <div class="metric-name"><span class="lang-ko">지니 계수</span><span class="lang-en">Gini Coeff.</span></div>
                         </div>
                         <div class="metric">
                             <div class="metric-value warning">2,251</div>
@@ -477,12 +507,16 @@
                         </div>
                         <div class="metric">
                             <div class="metric-value">0.4493</div>
-                            <div class="metric-name">정규화 엔트로피</div>
+                            <div class="metric-name"><span class="lang-ko">정규화 엔트로피</span><span class="lang-en">Norm. Entropy</span></div>
                         </div>
                     </div>
-                    <p style="color: #888; font-size: 0.85rem;">
+                    <p class="lang-ko" style="color: #888; font-size: 0.85rem;">
                         나카모토 계수 2 = 2명이면 51% 장악 가능.<br>
                         HHI 2,251 = 중간 집중 (1,500~2,500)
+                    </p>
+                    <p class="lang-en" style="color: #888; font-size: 0.85rem;">
+                        Nakamoto Coeff. 2 = 2 entities can control 51%.<br>
+                        HHI 2,251 = moderately concentrated (1,500-2,500)
                     </p>
                 </div>
 
@@ -491,17 +525,17 @@
                     <h4>
                         Kleros (Ethereum)
                         <a class="contract-link" href="https://etherscan.io/token/0x93ed3fbe21207ec2e8f2d3c3de6e058cb73bc04d" target="_blank">
-                            📄 컨트랙트
+                            📄 <span class="lang-ko">컨트랙트</span><span class="lang-en">Contract</span>
                         </a>
                     </h4>
                     <div class="metrics">
                         <div class="metric">
                             <div class="metric-value warning">2</div>
-                            <div class="metric-name">나카모토 계수</div>
+                            <div class="metric-name"><span class="lang-ko">나카모토 계수</span><span class="lang-en">Nakamoto Coeff.</span></div>
                         </div>
                         <div class="metric">
                             <div class="metric-value warning">0.8764</div>
-                            <div class="metric-name">지니 계수</div>
+                            <div class="metric-name"><span class="lang-ko">지니 계수</span><span class="lang-en">Gini Coeff.</span></div>
                         </div>
                         <div class="metric">
                             <div class="metric-value">2,004</div>
@@ -509,31 +543,38 @@
                         </div>
                         <div class="metric">
                             <div class="metric-value">0.5153</div>
-                            <div class="metric-name">정규화 엔트로피</div>
+                            <div class="metric-name"><span class="lang-ko">정규화 엔트로피</span><span class="lang-en">Norm. Entropy</span></div>
                         </div>
                     </div>
-                    <p style="color: #888; font-size: 0.85rem;">
+                    <p class="lang-ko" style="color: #888; font-size: 0.85rem;">
                         Ethereum 메인넷의 PNK 토큰 분포.<br>
                         실제 Court는 Arbitrum에서 운영됨.
+                    </p>
+                    <p class="lang-en" style="color: #888; font-size: 0.85rem;">
+                        PNK token distribution on Ethereum mainnet.<br>
+                        Actual Court operates on Arbitrum.
                     </p>
                 </div>
             </div>
 
             <div class="insight-box">
-                <h4>오라클 신뢰 문제</h4>
-                <p><strong>UMA의 나카모토 계수가 1</strong>이라는 것은 단 1명이 전체 투표권의 과반을 보유하고 있어 사실상 결과를 좌우할 수 있다는 의미입니다.
+                <h4><span class="lang-ko">오라클 신뢰 문제</span><span class="lang-en">Oracle Trust Issues</span></h4>
+                <p class="lang-ko"><strong>UMA의 나카모토 계수가 1</strong>이라는 것은 단 1명이 전체 투표권의 과반을 보유하고 있어 사실상 결과를 좌우할 수 있다는 의미입니다.
                 Kleros v2(Arbitrum)도 나카모토 계수 2로, 2명이면 51%를 장악할 수 있습니다.
                 두 오라클 모두 지니 계수 0.9 이상으로 극단적 불평등 상태입니다.</p>
+                <p class="lang-en"><strong>UMA's Nakamoto Coefficient of 1</strong> means just 1 entity holds a majority of voting power, effectively controlling outcomes.
+                Kleros v2 (Arbitrum) also has a Nakamoto Coefficient of 2, meaning 2 entities can control 51%.
+                Both oracles have Gini coefficients above 0.9, indicating extreme inequality.</p>
             </div>
 
-            <h3>UMA 토큰 상위 10개 주소</h3>
+            <h3><span class="lang-ko">UMA 토큰 상위 10개 주소</span><span class="lang-en">UMA Token Top 10 Addresses</span></h3>
             <table>
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>주소</th>
-                        <th>잔액 (UMA)</th>
-                        <th>점유율</th>
+                        <th><span class="lang-ko">주소</span><span class="lang-en">Address</span></th>
+                        <th><span class="lang-ko">잔액 (UMA)</span><span class="lang-en">Balance (UMA)</span></th>
+                        <th><span class="lang-ko">점유율</span><span class="lang-en">Share</span></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -601,14 +642,14 @@
                 </tbody>
             </table>
 
-            <h3 style="margin-top: 40px;">Kleros (Arbitrum) 토큰 상위 10개 주소</h3>
+            <h3 style="margin-top: 40px;"><span class="lang-ko">Kleros (Arbitrum) 토큰 상위 10개 주소</span><span class="lang-en">Kleros (Arbitrum) Token Top 10 Addresses</span></h3>
             <table>
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>주소</th>
-                        <th>잔액 (PNK)</th>
-                        <th>점유율</th>
+                        <th><span class="lang-ko">주소</span><span class="lang-en">Address</span></th>
+                        <th><span class="lang-ko">잔액 (PNK)</span><span class="lang-en">Balance (PNK)</span></th>
+                        <th><span class="lang-ko">점유율</span><span class="lang-en">Share</span></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -679,118 +720,198 @@
 
         <!-- 4. 분쟁 투표 활동 분석 -->
         <section class="section">
-            <h2><span class="section-number">4</span> 분쟁 투표 활동 분석</h2>
+            <h2><span class="section-number">4</span> <span class="lang-ko">분쟁 투표 활동 분석</span><span class="lang-en">Dispute Voting Activity Analysis</span></h2>
 
-            <h3>UMA 투표 이벤트</h3>
-            <p style="color: #888; margin-bottom: 20px;">UMA Voting 컨트랙트의 전체 이벤트 로그 (2021-02-17 ~ 2025-03-12)</p>
+            <h3><span class="lang-ko">UMA 투표 이벤트</span><span class="lang-en">UMA Voting Events</span></h3>
+            <p class="lang-ko" style="color: #888; margin-bottom: 20px;">UMA Voting 컨트랙트의 전체 이벤트 로그 (2021-02-17 ~ 2025-03-12)</p>
+            <p class="lang-en" style="color: #888; margin-bottom: 20px;">Full event log from UMA Voting contract (2021-02-17 ~ 2025-03-12)</p>
 
             <div class="stat-grid">
                 <div class="stat-card">
                     <div class="stat-value">56,283</div>
-                    <div class="stat-label">전체 이벤트</div>
+                    <div class="stat-label"><span class="lang-ko">전체 이벤트</span><span class="lang-en">Total Events</span></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">16,863</div>
-                    <div class="stat-label">고유 트랜잭션</div>
+                    <div class="stat-label"><span class="lang-ko">고유 트랜잭션</span><span class="lang-en">Unique Transactions</span></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">239</div>
-                    <div class="stat-label">가격 요청 (분쟁 라운드)</div>
+                    <div class="stat-label"><span class="lang-ko">가격 요청 (분쟁 라운드)</span><span class="lang-en">Price Requests (Dispute Rounds)</span></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value warning">12,684</div>
-                    <div class="stat-label">고유 투표 트랜잭션</div>
+                    <div class="stat-label"><span class="lang-ko">고유 투표 트랜잭션</span><span class="lang-en">Unique Vote Transactions</span></div>
                 </div>
             </div>
 
             <div class="oracle-grid">
                 <div class="chart-container">
-                    <div class="chart-title">UMA 이벤트 유형별 분포</div>
+                    <div class="chart-title"><span class="lang-ko">UMA 이벤트 유형별 분포</span><span class="lang-en">UMA Event Type Distribution</span></div>
                     <canvas id="umaEventsChart" height="200"></canvas>
                 </div>
                 <div class="chart-container">
-                    <div class="chart-title">UMA 투표 파이프라인</div>
+                    <div class="chart-title"><span class="lang-ko">UMA 투표 파이프라인</span><span class="lang-en">UMA Voting Pipeline</span></div>
                     <canvas id="umaFunnelChart" height="200"></canvas>
                 </div>
             </div>
 
             <div class="insight-box">
-                <h4>UMA 투표 참여 분석</h4>
-                <p>239건의 가격 요청에 대해 14,902건의 투표 커밋과 13,396건의 투표 공개가 이루어졌습니다.
+                <h4><span class="lang-ko">UMA 투표 참여 분석</span><span class="lang-en">UMA Voting Participation Analysis</span></h4>
+                <p class="lang-ko">239건의 가격 요청에 대해 14,902건의 투표 커밋과 13,396건의 투표 공개가 이루어졌습니다.
                 커밋 대비 공개 비율은 89.9%로, 일부 투표자는 커밋 후 공개를 하지 않고 있습니다.
                 요청당 평균 62.4건의 투표가 이루어지며, 소수의 참여자에 의존하는 구조입니다.</p>
+                <p class="lang-en">239 price requests received 14,902 vote commits and 13,396 vote reveals.
+                The commit-to-reveal ratio is 89.9%, meaning some voters commit but never reveal.
+                An average of 62.4 votes per request indicates reliance on a small set of participants.</p>
             </div>
 
-            <h3 style="margin-top: 50px;">Kleros v2 Court 분쟁 이벤트</h3>
-            <p style="color: #888; margin-bottom: 20px;">KlerosCore + DisputeKitClassic 컨트랙트 (Arbitrum, 2024-11-07 ~ 2025-12-27)</p>
+            <h3 style="margin-top: 50px;"><span class="lang-ko">Kleros v2 Court 분쟁 이벤트</span><span class="lang-en">Kleros v2 Court Dispute Events</span></h3>
+            <p class="lang-ko" style="color: #888; margin-bottom: 20px;">KlerosCore + DisputeKitClassic 컨트랙트 (Arbitrum, 2024-11-07 ~ 2025-12-27)</p>
+            <p class="lang-en" style="color: #888; margin-bottom: 20px;">KlerosCore + DisputeKitClassic contracts (Arbitrum, 2024-11-07 ~ 2025-12-27)</p>
 
             <div class="stat-grid">
                 <div class="stat-card">
                     <div class="stat-value">233</div>
-                    <div class="stat-label">분쟁 생성</div>
+                    <div class="stat-label"><span class="lang-ko">분쟁 생성</span><span class="lang-en">Disputes Created</span></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">692</div>
-                    <div class="stat-label">배심원 선발 (Draw)</div>
+                    <div class="stat-label"><span class="lang-ko">배심원 선발 (Draw)</span><span class="lang-en">Juror Draws</span></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value warning">521</div>
-                    <div class="stat-label">투표 (VoteCast)</div>
+                    <div class="stat-label"><span class="lang-ko">투표 (VoteCast)</span><span class="lang-en">Votes Cast</span></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">118</div>
-                    <div class="stat-label">최종 판결 (Ruling)</div>
+                    <div class="stat-label"><span class="lang-ko">최종 판결 (Ruling)</span><span class="lang-en">Final Rulings</span></div>
                 </div>
             </div>
 
             <div class="stat-grid">
                 <div class="stat-card">
                     <div class="stat-value">118</div>
-                    <div class="stat-label">항소 가능 통보</div>
+                    <div class="stat-label"><span class="lang-ko">항소 가능 통보</span><span class="lang-en">Appeal Notifications</span></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value danger">163</div>
-                    <div class="stat-label">고유 배심원 (추정)</div>
+                    <div class="stat-label"><span class="lang-ko">고유 배심원 (추정)</span><span class="lang-en">Unique Jurors (est.)</span></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">3,502</div>
-                    <div class="stat-label">전체 이벤트</div>
+                    <div class="stat-label"><span class="lang-ko">전체 이벤트</span><span class="lang-en">Total Events</span></div>
                 </div>
             </div>
 
             <div class="oracle-grid">
                 <div class="chart-container">
-                    <div class="chart-title">Kleros Court 이벤트 유형별 분포</div>
+                    <div class="chart-title"><span class="lang-ko">Kleros Court 이벤트 유형별 분포</span><span class="lang-en">Kleros Court Event Type Distribution</span></div>
                     <canvas id="klerosEventsChart" height="200"></canvas>
                 </div>
                 <div class="chart-container">
-                    <div class="chart-title">Kleros 분쟁 파이프라인</div>
+                    <div class="chart-title"><span class="lang-ko">Kleros 분쟁 파이프라인</span><span class="lang-en">Kleros Dispute Pipeline</span></div>
                     <canvas id="klerosFunnelChart" height="200"></canvas>
                 </div>
             </div>
 
             <div class="insight-box">
-                <h4>Kleros Court 분쟁 해결 패턴</h4>
-                <p>총 233건의 분쟁이 생성되어 118건의 최종 판결이 내려졌습니다.
+                <h4><span class="lang-ko">Kleros Court 분쟁 해결 패턴</span><span class="lang-en">Kleros Court Dispute Resolution Pattern</span></h4>
+                <p class="lang-ko">총 233건의 분쟁이 생성되어 118건의 최종 판결이 내려졌습니다.
                 분쟁당 평균 3.0명의 배심원이 선발되고
                 2.2건의 투표가 이루어집니다.
                 추정 고유 배심원 수 163명은 전체 PNK 스테이커 대비 극소수로, 실질적 분쟁 해결 권한이 소수에게 집중되어 있음을 보여줍니다.</p>
+                <p class="lang-en">A total of 233 disputes were created, resulting in 118 final rulings.
+                Each dispute averages 3.0 juror draws and
+                2.2 votes cast.
+                The estimated 163 unique jurors represent a tiny fraction of all PNK stakers, showing that dispute resolution power is concentrated among a few.</p>
             </div>
         </section>
 
         <footer>
-            <p>데이터 수집일: 2026-02-07</p>
-            <p>Polymarket API & Etherscan API 기반</p>
+            <p><span class="lang-ko">데이터 수집일</span><span class="lang-en">Data collected</span>: 2026-02-07</p>
+            <p><span class="lang-ko">Polymarket API &amp; Etherscan API 기반</span><span class="lang-en">Based on Polymarket API &amp; Etherscan API</span></p>
             <div class="download-links" style="justify-content: center; margin-top: 15px;">
-                <a href="data.json" download>📥 전체 데이터 (JSON)</a>
+                <a href="data.json" download>📥 <span class="lang-ko">전체 데이터 (JSON)</span><span class="lang-en">Full Data (JSON)</span></a>
             </div>
         </footer>
     </div>
 
     <script>
+        // === Language toggle ===
+        const CHART_TR = {
+            ko: {
+                volumeShare: '거래량 점유율 (%)',
+                liquidityShare: '유동성 점유율 (%)',
+                markets: '마켓 수',
+                nakamoto: '나카모토 계수',
+                gini: '지니 계수',
+                hhiDiv: 'HHI (÷1000)',
+                oneMinusEntropy: '1-엔트로피',
+                oracleSubtitle: '값이 높을수록 집중도 높음 (나카모토 계수 제외)',
+                events: '이벤트 수',
+                klerosFunnel: ['DisputeCreation', 'Draw (배심원)', 'VoteCast (투표)', 'Ruling (판결)', 'Appeal (항소)'],
+                title: '예측시장 구조적 리스크 분석'
+            },
+            en: {
+                volumeShare: 'Volume Share (%)',
+                liquidityShare: 'Liquidity Share (%)',
+                markets: 'Markets',
+                nakamoto: 'Nakamoto Coeff.',
+                gini: 'Gini Coeff.',
+                hhiDiv: 'HHI (÷1000)',
+                oneMinusEntropy: '1-Entropy',
+                oracleSubtitle: 'Higher = more concentrated (except Nakamoto)',
+                events: 'Events',
+                klerosFunnel: ['DisputeCreation', 'Draw (Juror)', 'VoteCast (Vote)', 'Ruling', 'Appeal'],
+                title: 'Prediction Market Structural Risk Analysis'
+            }
+        };
+
+        function detectLang() {
+            var saved = localStorage.getItem('lang');
+            if (saved) return saved;
+            return navigator.language.startsWith('ko') ? 'ko' : 'en';
+        }
+
+        function updateChartLabels(lang) {
+            var tr = CHART_TR[lang];
+            chartConcentration.data.datasets[0].label = tr.volumeShare;
+            chartConcentration.data.datasets[1].label = tr.liquidityShare;
+            chartConcentration.update();
+
+            chartDistribution.data.datasets[0].label = tr.markets;
+            chartDistribution.update();
+
+            chartOracleCompare.data.labels = [tr.nakamoto, tr.gini, tr.hhiDiv, tr.oneMinusEntropy];
+            chartOracleCompare.options.plugins.title.text = tr.oracleSubtitle;
+            chartOracleCompare.update();
+
+            chartUmaFunnel.data.datasets[0].label = tr.events;
+            chartUmaFunnel.update();
+
+            chartKlerosFunnel.data.labels = tr.klerosFunnel;
+            chartKlerosFunnel.data.datasets[0].label = tr.events;
+            chartKlerosFunnel.update();
+
+            document.title = tr.title;
+            document.documentElement.lang = lang;
+        }
+
+        function setLang(lang) {
+            document.body.className = 'lang-' + lang;
+            localStorage.setItem('lang', lang);
+            document.getElementById('langToggle').textContent = lang === 'ko' ? 'EN' : '한국어';
+            updateChartLabels(lang);
+        }
+
+        function toggleLang() {
+            setLang(document.body.classList.contains('lang-ko') ? 'en' : 'ko');
+        }
+
         // 유동성 집중도 차트
         const concentrationData = [{"top_n": 5, "volume_share": 6.5, "liquidity_share": 6.7}, {"top_n": 10, "volume_share": 11.6, "liquidity_share": 13.1}, {"top_n": 20, "volume_share": 20.7, "liquidity_share": 22.2}, {"top_n": 50, "volume_share": 40.9, "liquidity_share": 34.9}, {"top_n": 100, "volume_share": 62.4, "liquidity_share": 49.5}];
-        new Chart(document.getElementById('concentrationChart'), {
+        const chartConcentration = new Chart(document.getElementById('concentrationChart'), {
             type: 'bar',
             data: {
                 labels: concentrationData.map(d => 'Top ' + d.top_n),
@@ -818,7 +939,7 @@
 
         // 유동성 분포 차트
         const distData = [{"bucket": "$0-100", "count": 147}, {"bucket": "$100-1K", "count": 1080}, {"bucket": "$1K-10K", "count": 2339}, {"bucket": "$10K-100K", "count": 1000}, {"bucket": "$100K-1M", "count": 387}, {"bucket": "$1M+", "count": 47}];
-        new Chart(document.getElementById('distributionChart'), {
+        const chartDistribution = new Chart(document.getElementById('distributionChart'), {
             type: 'bar',
             data: {
                 labels: distData.map(d => d.bucket),
@@ -840,7 +961,7 @@
         });
 
         // 오라클 비교 차트
-        new Chart(document.getElementById('oracleCompareChart'), {
+        const chartOracleCompare = new Chart(document.getElementById('oracleCompareChart'), {
             type: 'bar',
             data: {
                 labels: ['나카모토 계수', '지니 계수', 'HHI (÷1000)', '1-엔트로피'],
@@ -890,7 +1011,7 @@
         });
 
         // UMA 이벤트 유형 도넛 차트
-        new Chart(document.getElementById('umaEventsChart'), {
+        const chartUmaEvents = new Chart(document.getElementById('umaEventsChart'), {
             type: 'doughnut',
             data: {
                 labels: ["VoteCommitted", "EncryptedVote", "VoteRevealed", "RewardsRetrieved", "PriceRequestAdded", "PriceResolved", "OwnershipTransferred"],
@@ -917,7 +1038,7 @@
         });
 
         // UMA 투표 파이프라인 차트
-        new Chart(document.getElementById('umaFunnelChart'), {
+        const chartUmaFunnel = new Chart(document.getElementById('umaFunnelChart'), {
             type: 'bar',
             data: {
                 labels: ['PriceRequest', 'VoteCommitted', 'EncryptedVote', 'VoteRevealed', 'PriceResolved', 'RewardsRetrieved'],
@@ -954,7 +1075,7 @@
         });
 
         // Kleros 이벤트 유형 도넛 차트
-        new Chart(document.getElementById('klerosEventsChart'), {
+        const chartKlerosEvents = new Chart(document.getElementById('klerosEventsChart'), {
             type: 'doughnut',
             data: {
                 labels: ['DisputeCreation', 'Draw', 'VoteCast', 'NewPeriod', 'Ruling', 'AppealPossible', 'TokenAndETHShift'],
@@ -989,7 +1110,7 @@
         });
 
         // Kleros 분쟁 파이프라인 차트
-        new Chart(document.getElementById('klerosFunnelChart'), {
+        const chartKlerosFunnel = new Chart(document.getElementById('klerosFunnelChart'), {
             type: 'bar',
             data: {
                 labels: ['DisputeCreation', 'Draw (배심원)', 'VoteCast (투표)', 'Ruling (판결)', 'Appeal (항소)'],
@@ -1022,6 +1143,9 @@
                 plugins: { legend: { display: false } }
             }
         });
+
+        // Initialize language
+        setLang(detectLang());
     </script>
 </body>
 </html>
