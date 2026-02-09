@@ -140,6 +140,41 @@ def analyze_calibration() -> dict:
                 }
         deviation_by_range[label] = range_result
 
+    # ── 회귀 분석 (Regression): Predicted vs Actual ───────────────
+    regression_models = {}
+
+    for label, curve in calibration_curves.items():
+        valid_points = [(pt["bin_mid"], pt["actual_rate"])
+                        for pt in curve
+                        if pt["actual_rate"] is not None and pt["count"] > 0]
+
+        if len(valid_points) >= 3:  # 최소 3개 포인트 필요
+            x_vals = np.array([p[0] for p in valid_points])
+            y_vals = np.array([p[1] for p in valid_points])
+
+            # 선형 회귀: y = slope * x + intercept
+            slope, intercept = np.polyfit(x_vals, y_vals, 1)
+
+            # R² 계산
+            y_pred = slope * x_vals + intercept
+            ss_res = np.sum((y_vals - y_pred) ** 2)
+            ss_tot = np.sum((y_vals - np.mean(y_vals)) ** 2)
+            r_squared = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0
+
+            # 회귀선 데이터 (0 ~ 1 범위)
+            regression_line = [
+                {"x": 0.0, "y": float(intercept)},
+                {"x": 1.0, "y": float(slope + intercept)},
+            ]
+
+            regression_models[label] = {
+                "slope": round(float(slope), 4),
+                "intercept": round(float(intercept), 4),
+                "r_squared": round(float(r_squared), 4),
+                "regression_line": regression_line,
+                "n_points": len(valid_points),
+            }
+
     # ── 거래량 티어별 Brier Score ─────────────────────────────────
     volume_tiers = {
         "1M+": df["volume"] >= 1_000_000,
@@ -177,6 +212,7 @@ def analyze_calibration() -> dict:
         "data_period": data_period,
         "deviation_summary": deviation_summary,
         "deviation_by_range": deviation_by_range,
+        "regression_models": regression_models,
     }
 
 
@@ -219,6 +255,13 @@ def main():
         if b["deviation"] is not None:
             sign = "+" if b["deviation"] > 0 else ""
             print(f"  {b['bin_label']:>3}: actual {b['actual_rate']:.3f}, dev {sign}{b['deviation']*100:.1f}pp ({b['count']}건)")
+
+    print(f"\n회귀 분석 (T-7d):")
+    reg_t7d = result.get("regression_models", {}).get("t7d", {})
+    if reg_t7d:
+        print(f"  y = {reg_t7d['slope']:.4f} * x + {reg_t7d['intercept']:.4f}")
+        print(f"  R² = {reg_t7d['r_squared']:.4f}")
+        print(f"  ({reg_t7d['n_points']}개 포인트)")
 
     print("\n=== 분석 완료 ===")
 

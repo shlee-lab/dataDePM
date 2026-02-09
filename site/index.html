@@ -1219,14 +1219,14 @@
                 "반반" 구간(35-65%) 마켓의 가격은 실제 발생률 대비 평균 <strong>7.5pp 과대추정</strong>합니다 (377건).
                 즉, 가격 50%인 마켓이 실제로는 ~42%만 Yes로 해결됩니다.
                 반면 높은 가격 구간(75-95%)은 실제 발생률이 가격보다 높아 <strong>과소추정</strong> 경향이 있습니다.
-                Brier Score 0.0795(T-7d)은 전체적으로 양호하지만,
-                이 수치가 구간별 체계적 편향을 감추고 있습니다.</p>
+                선형 회귀 분석 결과 R²=0.976로, 가격과 실제 결과 간의 상관관계를 보여주지만
+                Calibration curve의 비선형 패턴은 구간별 체계적 편향을 명확히 드러냅니다.</p>
                 <p class="lang-en">Analysis of 2,751 Polymarket markets reveals <strong>systematic price-probability deviation</strong>.
                 In the "toss-up" range (35-65%), prices <strong>overestimate actual outcomes by 7.5pp</strong> on average (377 markets).
                 A market priced at 50% actually resolves Yes only ~42% of the time.
                 Conversely, high-priced markets (75-95%) tend to <strong>underestimate</strong> actual outcomes.
-                While the overall Brier Score of 0.0795 (T-7d) appears decent,
-                it masks these systematic range-specific biases.</p>
+                Linear regression shows R²=0.976, indicating correlation between price and outcome,
+                yet the calibration curve's non-linear pattern reveals systematic range-specific biases.</p>
             </div>
 
             <div class="download-links">
@@ -1287,6 +1287,10 @@
             var saved = localStorage.getItem('lang');
             if (saved) return saved;
             return navigator.language.startsWith('ko') ? 'ko' : 'en';
+        }
+
+        function getLang() {
+            return document.body.classList.contains('lang-ko') ? 'ko' : 'en';
         }
 
         function updateChartLabels(lang) {
@@ -1736,6 +1740,7 @@
         const calBrier = {"t0": 0.0635, "t1d": 0.0709, "t7d": 0.0795, "t30d": 0.0776};
         const calVolTier = {"1M+": {"count": 194, "t0": 0.0064, "t1d": 0.0179, "t7d": 0.0381, "t30d": 0.0611}, "100K+": {"count": 382, "t0": 0.023, "t1d": 0.0346, "t7d": 0.067, "t30d": 0.0776}, "10K+": {"count": 975, "t0": 0.0443, "t1d": 0.0585, "t7d": 0.0743, "t30d": 0.0727}, "< 10K": {"count": 1200, "t0": 0.1017, "t1d": 0.1052, "t7d": 0.1051, "t30d": 0.0952}};
         const calDevSummary = {"t0": [{"bin_label": "5%", "bin_mid": 0.05, "actual_rate": 0.0035, "deviation": -0.0465, "count": 1422}, {"bin_label": "15%", "bin_mid": 0.15, "actual_rate": 0.1102, "deviation": -0.0398, "count": 127}, {"bin_label": "25%", "bin_mid": 0.25, "actual_rate": 0.17, "deviation": -0.08, "count": 100}, {"bin_label": "35%", "bin_mid": 0.35, "actual_rate": 0.3273, "deviation": -0.0227, "count": 55}, {"bin_label": "45%", "bin_mid": 0.45, "actual_rate": 0.2772, "deviation": -0.1728, "count": 101}, {"bin_label": "55%", "bin_mid": 0.55, "actual_rate": 0.4938, "deviation": -0.0562, "count": 322}, {"bin_label": "65%", "bin_mid": 0.65, "actual_rate": 0.6875, "deviation": 0.0375, "count": 48}, {"bin_label": "75%", "bin_mid": 0.75, "actual_rate": 0.871, "deviation": 0.121, "count": 62}, {"bin_label": "85%", "bin_mid": 0.85, "actual_rate": 0.8485, "deviation": -0.0015, "count": 66}, {"bin_label": "95%", "bin_mid": 0.95, "actual_rate": 1.0, "deviation": 0.05, "count": 432}], "t1d": [{"bin_label": "5%", "bin_mid": 0.05, "actual_rate": 0.0093, "deviation": -0.0407, "count": 1288}, {"bin_label": "15%", "bin_mid": 0.15, "actual_rate": 0.0882, "deviation": -0.0618, "count": 170}, {"bin_label": "25%", "bin_mid": 0.25, "actual_rate": 0.2, "deviation": -0.05, "count": 110}, {"bin_label": "35%", "bin_mid": 0.35, "actual_rate": 0.2941, "deviation": -0.0559, "count": 68}, {"bin_label": "45%", "bin_mid": 0.45, "actual_rate": 0.3077, "deviation": -0.1423, "count": 117}, {"bin_label": "55%", "bin_mid": 0.55, "actual_rate": 0.4962, "deviation": -0.0538, "count": 264}, {"bin_label": "65%", "bin_mid": 0.65, "actual_rate": 0.7794, "deviation": 0.1294, "count": 68}, {"bin_label": "75%", "bin_mid": 0.75, "actual_rate": 0.8406, "deviation": 0.0906, "count": 69}, {"bin_label": "85%", "bin_mid": 0.85, "actual_rate": 0.8852, "deviation": 0.0352, "count": 61}, {"bin_label": "95%", "bin_mid": 0.95, "actual_rate": 0.9939, "deviation": 0.0439, "count": 327}], "t7d": [{"bin_label": "5%", "bin_mid": 0.05, "actual_rate": 0.0086, "deviation": -0.0414, "count": 932}, {"bin_label": "15%", "bin_mid": 0.15, "actual_rate": 0.1237, "deviation": -0.0263, "count": 186}, {"bin_label": "25%", "bin_mid": 0.25, "actual_rate": 0.1942, "deviation": -0.0558, "count": 103}, {"bin_label": "35%", "bin_mid": 0.35, "actual_rate": 0.3448, "deviation": -0.0052, "count": 58}, {"bin_label": "45%", "bin_mid": 0.45, "actual_rate": 0.3922, "deviation": -0.0578, "count": 102}, {"bin_label": "55%", "bin_mid": 0.55, "actual_rate": 0.4286, "deviation": -0.1214, "count": 168}, {"bin_label": "65%", "bin_mid": 0.65, "actual_rate": 0.6122, "deviation": -0.0378, "count": 49}, {"bin_label": "75%", "bin_mid": 0.75, "actual_rate": 0.8462, "deviation": 0.0962, "count": 52}, {"bin_label": "85%", "bin_mid": 0.85, "actual_rate": 0.9038, "deviation": 0.0538, "count": 52}, {"bin_label": "95%", "bin_mid": 0.95, "actual_rate": 0.9892, "deviation": 0.0392, "count": 185}], "t30d": [{"bin_label": "5%", "bin_mid": 0.05, "actual_rate": 0.0117, "deviation": -0.0383, "count": 596}, {"bin_label": "15%", "bin_mid": 0.15, "actual_rate": 0.13, "deviation": -0.02, "count": 100}, {"bin_label": "25%", "bin_mid": 0.25, "actual_rate": 0.1829, "deviation": -0.0671, "count": 82}, {"bin_label": "35%", "bin_mid": 0.35, "actual_rate": 0.225, "deviation": -0.125, "count": 40}, {"bin_label": "45%", "bin_mid": 0.45, "actual_rate": 0.3469, "deviation": -0.1031, "count": 49}, {"bin_label": "55%", "bin_mid": 0.55, "actual_rate": 0.4205, "deviation": -0.1295, "count": 88}, {"bin_label": "65%", "bin_mid": 0.65, "actual_rate": 0.6562, "deviation": 0.0062, "count": 32}, {"bin_label": "75%", "bin_mid": 0.75, "actual_rate": 0.7778, "deviation": 0.0278, "count": 27}, {"bin_label": "85%", "bin_mid": 0.85, "actual_rate": 0.9091, "deviation": 0.0591, "count": 33}, {"bin_label": "95%", "bin_mid": 0.95, "actual_rate": 0.972, "deviation": 0.022, "count": 107}]};
+        const calRegression = {"t0": {"slope": 1.1478, "intercept": -0.095, "r_squared": 0.9647, "regression_line": [{"x": 0.0, "y": -0.09500303030303006}, {"x": 1.0, "y": 1.0528030303030302}], "n_points": 10}, "t1d": {"slope": 1.169, "intercept": -0.095, "r_squared": 0.9676, "regression_line": [{"x": 0.0, "y": -0.09501878787878763}, {"x": 1.0, "y": 1.0739387878787878}], "n_points": 10}, "t7d": {"slope": 1.1142, "intercept": -0.0728, "r_squared": 0.9757, "regression_line": [{"x": 0.0, "y": -0.07276212121212088}, {"x": 1.0, "y": 1.0414621212121213}], "n_points": 10}, "t30d": {"slope": 1.1175, "intercept": -0.0955, "r_squared": 0.9724, "regression_line": [{"x": 0.0, "y": -0.09552030303030272}, {"x": 1.0, "y": 1.0219403030303034}], "n_points": 10}};
 
         // Calibration Curve (multi-line)
         if (document.getElementById('calibrationCurveChart') && Object.keys(calCurves).length > 0) {
@@ -1770,6 +1775,20 @@
                     pointRadius: 4,
                     fill: false,
                     tension: 0.1,
+                });
+            }
+
+            // Regression line for T-7d
+            if (calRegression['t7d']) {
+                const regLine = calRegression['t7d'].regression_line;
+                datasets.push({
+                    label: 'Regression (T-7d)',
+                    data: regLine.map(pt => ({ x: pt.x, y: pt.y })),
+                    borderColor: 'rgba(255, 99, 132, 0.6)',
+                    borderDash: [8, 4],
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: false,
                 });
             }
 

@@ -289,10 +289,12 @@ def build_html(data):
     cal_period = cal.get("data_period", {})
     cal_dev_summary = cal.get("deviation_summary", {})
     cal_dev_range = cal.get("deviation_by_range", {})
+    cal_regression = cal.get("regression_models", {})
 
     # 편차 핵심 수치 (T-7d 기준)
     cal_mid_dev_pp = cal_dev_range.get("t7d", {}).get("mid", {}).get("avg_deviation_pp", 0)
     cal_mid_dev_count = cal_dev_range.get("t7d", {}).get("mid", {}).get("count", 0)
+    cal_r_squared = cal_regression.get("t7d", {}).get("r_squared", 0)
 
     # Pre-compute values used in multiple places
     liquid_ratio = data["polymarket_markets"]["liquid_10k"] / data["polymarket_markets"]["total"] * 100
@@ -1130,14 +1132,14 @@ def build_html(data):
                 "반반" 구간(35-65%) 마켓의 가격은 실제 발생률 대비 평균 <strong>{abs(cal_mid_dev_pp)}pp {"과대추정" if cal_mid_dev_pp < 0 else "과소추정"}</strong>합니다 ({cal_mid_dev_count}건).
                 즉, 가격 50%인 마켓이 실제로는 ~{50 + cal_mid_dev_pp:.0f}%만 Yes로 해결됩니다.
                 반면 높은 가격 구간(75-95%)은 실제 발생률이 가격보다 높아 <strong>과소추정</strong> 경향이 있습니다.
-                Brier Score {cal_brier.get("t7d", 0):.4f}(T-7d)은 전체적으로 양호하지만,
-                이 수치가 구간별 체계적 편향을 감추고 있습니다.</p>
+                선형 회귀 분석 결과 R²={cal_r_squared:.3f}로, 가격과 실제 결과 간의 상관관계를 보여주지만
+                Calibration curve의 비선형 패턴은 구간별 체계적 편향을 명확히 드러냅니다.</p>
                 <p class="lang-en">Analysis of {cal_total:,} Polymarket markets reveals <strong>systematic price-probability deviation</strong>.
                 In the "toss-up" range (35-65%), prices <strong>{"overestimate" if cal_mid_dev_pp < 0 else "underestimate"} actual outcomes by {abs(cal_mid_dev_pp)}pp</strong> on average ({cal_mid_dev_count} markets).
                 A market priced at 50% actually resolves Yes only ~{50 + cal_mid_dev_pp:.0f}% of the time.
                 Conversely, high-priced markets (75-95%) tend to <strong>underestimate</strong> actual outcomes.
-                While the overall Brier Score of {cal_brier.get("t7d", 0):.4f} (T-7d) appears decent,
-                it masks these systematic range-specific biases.</p>
+                Linear regression shows R²={cal_r_squared:.3f}, indicating correlation between price and outcome,
+                yet the calibration curve's non-linear pattern reveals systematic range-specific biases.</p>
             </div>
 
             <div class="download-links">
@@ -1198,6 +1200,10 @@ def build_html(data):
             var saved = localStorage.getItem('lang');
             if (saved) return saved;
             return navigator.language.startsWith('ko') ? 'ko' : 'en';
+        }}
+
+        function getLang() {{
+            return document.body.classList.contains('lang-ko') ? 'ko' : 'en';
         }}
 
         function updateChartLabels(lang) {{
@@ -1647,6 +1653,7 @@ def build_html(data):
         const calBrier = {json.dumps(cal_brier)};
         const calVolTier = {json.dumps(cal_vol_tier)};
         const calDevSummary = {json.dumps(cal_dev_summary)};
+        const calRegression = {json.dumps(cal_regression)};
 
         // Calibration Curve (multi-line)
         if (document.getElementById('calibrationCurveChart') && Object.keys(calCurves).length > 0) {{
@@ -1681,6 +1688,20 @@ def build_html(data):
                     pointRadius: 4,
                     fill: false,
                     tension: 0.1,
+                }});
+            }}
+
+            // Regression line for T-7d
+            if (calRegression['t7d']) {{
+                const regLine = calRegression['t7d'].regression_line;
+                datasets.push({{
+                    label: 'Regression (T-7d)',
+                    data: regLine.map(pt => ({{ x: pt.x, y: pt.y }})),
+                    borderColor: 'rgba(255, 99, 132, 0.6)',
+                    borderDash: [8, 4],
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: false,
                 }});
             }}
 
