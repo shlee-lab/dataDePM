@@ -295,6 +295,8 @@ def build_html(data):
     cal_mid_dev_pp = cal_dev_range.get("t7d", {}).get("mid", {}).get("avg_deviation_pp", 0)
     cal_mid_dev_count = cal_dev_range.get("t7d", {}).get("mid", {}).get("count", 0)
     cal_r_squared = cal_regression.get("t7d", {}).get("r_squared", 0)
+    cal_beta_a = cal_regression.get("t7d", {}).get("a", 1)
+    cal_beta_b = cal_regression.get("t7d", {}).get("b", 0)
 
     # Pre-compute values used in multiple places
     liquid_ratio = data["polymarket_markets"]["liquid_10k"] / data["polymarket_markets"]["total"] * 100
@@ -1132,14 +1134,14 @@ def build_html(data):
                 "반반" 구간(35-65%) 마켓의 가격은 실제 발생률 대비 평균 <strong>{abs(cal_mid_dev_pp)}pp {"과대추정" if cal_mid_dev_pp < 0 else "과소추정"}</strong>합니다 ({cal_mid_dev_count}건).
                 즉, 가격 50%인 마켓이 실제로는 ~{50 + cal_mid_dev_pp:.0f}%만 Yes로 해결됩니다.
                 반면 높은 가격 구간(75-95%)은 실제 발생률이 가격보다 높아 <strong>과소추정</strong> 경향이 있습니다.
-                선형 회귀 분석 결과 R²={cal_r_squared:.3f}로, 가격과 실제 결과 간의 상관관계를 보여주지만
-                Calibration curve의 비선형 패턴은 구간별 체계적 편향을 명확히 드러냅니다.</p>
+                Beta Calibration 회귀 모델 <code>y = σ({cal_beta_a:.3f}·logit(x) {cal_beta_b:+.3f})</code>은 R²={cal_r_squared:.3f}으로,
+                a={cal_beta_a:.2f}{" (>1: 가격이 극단값에 치우침)" if cal_beta_a > 1 else ""}, b={cal_beta_b:.2f}{" (<0: Yes 방향 과대추정)" if cal_beta_b < 0 else ""}을 보여줍니다.</p>
                 <p class="lang-en">Analysis of {cal_total:,} Polymarket markets reveals <strong>systematic price-probability deviation</strong>.
                 In the "toss-up" range (35-65%), prices <strong>{"overestimate" if cal_mid_dev_pp < 0 else "underestimate"} actual outcomes by {abs(cal_mid_dev_pp)}pp</strong> on average ({cal_mid_dev_count} markets).
                 A market priced at 50% actually resolves Yes only ~{50 + cal_mid_dev_pp:.0f}% of the time.
                 Conversely, high-priced markets (75-95%) tend to <strong>underestimate</strong> actual outcomes.
-                Linear regression shows R²={cal_r_squared:.3f}, indicating correlation between price and outcome,
-                yet the calibration curve's non-linear pattern reveals systematic range-specific biases.</p>
+                Beta Calibration regression <code>y = σ({cal_beta_a:.3f}·logit(x) {cal_beta_b:+.3f})</code> yields R²={cal_r_squared:.3f}:
+                a={cal_beta_a:.2f}{" (>1: prices skew toward extremes)" if cal_beta_a > 1 else ""}, b={cal_beta_b:.2f}{" (<0: systematic Yes overestimation)" if cal_beta_b < 0 else ""}.</p>
             </div>
 
             <div class="download-links">
@@ -1691,17 +1693,20 @@ def build_html(data):
                 }});
             }}
 
-            // Regression line for T-7d
+            // Beta Calibration curve for T-7d
             if (calRegression['t7d']) {{
-                const regLine = calRegression['t7d'].regression_line;
+                const reg = calRegression['t7d'];
+                const regLine = reg.regression_line;
+                const r2 = reg.r_squared;
                 datasets.push({{
-                    label: 'Regression (T-7d)',
+                    label: 'Beta Cal. (R\u00b2=' + r2.toFixed(3) + ')',
                     data: regLine.map(pt => ({{ x: pt.x, y: pt.y }})),
-                    borderColor: 'rgba(255, 99, 132, 0.6)',
+                    borderColor: 'rgba(255, 99, 132, 0.7)',
                     borderDash: [8, 4],
                     borderWidth: 2,
                     pointRadius: 0,
                     fill: false,
+                    tension: 0.3,
                 }});
             }}
 

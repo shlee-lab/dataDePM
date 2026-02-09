@@ -9,6 +9,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from scipy.optimize import curve_fit
+from scipy.special import expit
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -140,40 +142,53 @@ def analyze_calibration() -> dict:
                 }
         deviation_by_range[label] = range_result
 
-    # ── 회귀 분석 (Regression): Predicted vs Actual ───────────────
+    # ── Beta Calibration 회귀: y = σ(a·logit(x) + b) ───────────
+    def _beta_cal(x, a, b):
+        return expit(a * np.log(x / (1 - x)) + b)
+
     regression_models = {}
 
     for label, curve in calibration_curves.items():
-        valid_points = [(pt["bin_mid"], pt["actual_rate"])
+        valid_points = [(pt["bin_mid"], pt["actual_rate"], pt["count"])
                         for pt in curve
                         if pt["actual_rate"] is not None and pt["count"] > 0]
 
-        if len(valid_points) >= 3:  # 최소 3개 포인트 필요
+        if len(valid_points) >= 3:
             x_vals = np.array([p[0] for p in valid_points])
             y_vals = np.array([p[1] for p in valid_points])
+            w_vals = np.sqrt(np.array([p[2] for p in valid_points]))
 
-            # 선형 회귀: y = slope * x + intercept
-            slope, intercept = np.polyfit(x_vals, y_vals, 1)
+            try:
+                popt, _ = curve_fit(
+                    _beta_cal, x_vals, y_vals, p0=[1.0, 0.0],
+                    sigma=1 / w_vals, absolute_sigma=False, maxfev=10000,
+                )
+                a_coef, b_coef = popt
 
-            # R² 계산
-            y_pred = slope * x_vals + intercept
-            ss_res = np.sum((y_vals - y_pred) ** 2)
-            ss_tot = np.sum((y_vals - np.mean(y_vals)) ** 2)
-            r_squared = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0
+                # R² (weighted)
+                y_pred = _beta_cal(x_vals, a_coef, b_coef)
+                ss_res = np.sum(w_vals * (y_vals - y_pred) ** 2)
+                ss_tot = np.sum(w_vals * (y_vals - np.average(y_vals, weights=w_vals)) ** 2)
+                r_squared = 1 - ss_res / ss_tot if ss_tot > 0 else 0
 
-            # 회귀선 데이터 (0 ~ 1 범위)
-            regression_line = [
-                {"x": 0.0, "y": float(intercept)},
-                {"x": 1.0, "y": float(slope + intercept)},
-            ]
+                # 부드러운 곡선 데이터 (차트용, 21개 포인트)
+                x_smooth = np.linspace(0.02, 0.98, 21)
+                y_smooth = _beta_cal(x_smooth, a_coef, b_coef)
+                regression_line = [
+                    {"x": round(float(xi), 3), "y": round(float(yi), 4)}
+                    for xi, yi in zip(x_smooth, y_smooth)
+                ]
 
-            regression_models[label] = {
-                "slope": round(float(slope), 4),
-                "intercept": round(float(intercept), 4),
-                "r_squared": round(float(r_squared), 4),
-                "regression_line": regression_line,
-                "n_points": len(valid_points),
-            }
+                regression_models[label] = {
+                    "model": "beta_calibration",
+                    "a": round(float(a_coef), 4),
+                    "b": round(float(b_coef), 4),
+                    "r_squared": round(float(r_squared), 4),
+                    "regression_line": regression_line,
+                    "n_points": len(valid_points),
+                }
+            except RuntimeError:
+                pass  # curve_fit 실패 시 skip
 
     # ── 거래량 티어별 Brier Score ─────────────────────────────────
     volume_tiers = {
@@ -256,10 +271,11 @@ def main():
             sign = "+" if b["deviation"] > 0 else ""
             print(f"  {b['bin_label']:>3}: actual {b['actual_rate']:.3f}, dev {sign}{b['deviation']*100:.1f}pp ({b['count']}건)")
 
-    print(f"\n회귀 분석 (T-7d):")
+    print(f"\nBeta Calibration 회귀 (T-7d):")
     reg_t7d = result.get("regression_models", {}).get("t7d", {})
     if reg_t7d:
-        print(f"  y = {reg_t7d['slope']:.4f} * x + {reg_t7d['intercept']:.4f}")
+        print(f"  y = σ({reg_t7d['a']:.4f} · logit(x) + {reg_t7d['b']:.4f})")
+        print(f"  a={reg_t7d['a']:.4f} (>1: 극단 편향), b={reg_t7d['b']:.4f} (<0: Yes 과대추정)")
         print(f"  R² = {reg_t7d['r_squared']:.4f}")
         print(f"  ({reg_t7d['n_points']}개 포인트)")
 
