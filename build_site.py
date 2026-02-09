@@ -297,6 +297,8 @@ def build_html(data):
     cal_r_squared = cal_regression.get("t7d", {}).get("r_squared", 0)
     cal_beta_a = cal_regression.get("t7d", {}).get("a", 1)
     cal_beta_b = cal_regression.get("t7d", {}).get("b", 0)
+    cal_mid_dev_t30d = cal_dev_range.get("t30d", {}).get("mid", {}).get("avg_deviation_pp", 0)
+    cal_mid_dev_t1d = cal_dev_range.get("t1d", {}).get("mid", {}).get("avg_deviation_pp", 0)
 
     # Pre-compute values used in multiple places
     liquid_ratio = data["polymarket_markets"]["liquid_10k"] / data["polymarket_markets"]["total"] * 100
@@ -1118,29 +1120,35 @@ def build_html(data):
                     <canvas id="calibrationCurveChart" height="250"></canvas>
                 </div>
                 <div class="chart-container">
-                    <div class="chart-title">{t("가격 vs 실제 확률 편차 (T-7d)", "Price vs Actual Probability Deviation (T-7d)")}</div>
+                    <div class="chart-title">{t("시점별 가격-확률 편차", "Price-Probability Deviation by Horizon")}</div>
                     <canvas id="deviationBarChart" height="250"></canvas>
                 </div>
             </div>
 
-            <div class="chart-container" style="max-width: 600px;">
-                <div class="chart-title">{t("거래량 티어별 Brier Score (T-7d)", "Volume Tier Brier Score (T-7d)")}</div>
-                <canvas id="volumeTierBrierChart" height="200"></canvas>
+            <div class="oracle-grid">
+                <div class="chart-container">
+                    <div class="chart-title">{t("Beta Calibration 편차 곡선 (회귀 - 대각선)", "Beta Calibration Deviation Curves (Regression − Diagonal)")}</div>
+                    <canvas id="regressionWaveChart" height="250"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">{t("거래량 티어별 Brier Score (T-7d)", "Volume Tier Brier Score (T-7d)")}</div>
+                    <canvas id="volumeTierBrierChart" height="250"></canvas>
+                </div>
             </div>
 
             <div class="insight-box">
                 <h4>{t("핵심 발견: 가격 ≠ 확률", "Key Finding: Price ≠ Probability")}</h4>
                 <p class="lang-ko">Polymarket의 {cal_total:,}개 마켓에서 <strong>가격이 실제 확률을 체계적으로 왜곡</strong>하고 있습니다.
-                "반반" 구간(35-65%) 마켓의 가격은 실제 발생률 대비 평균 <strong>{abs(cal_mid_dev_pp)}pp {"과대추정" if cal_mid_dev_pp < 0 else "과소추정"}</strong>합니다 ({cal_mid_dev_count}건).
-                즉, 가격 50%인 마켓이 실제로는 ~{50 + cal_mid_dev_pp:.0f}%만 Yes로 해결됩니다.
-                반면 높은 가격 구간(75-95%)은 실제 발생률이 가격보다 높아 <strong>과소추정</strong> 경향이 있습니다.
-                Beta Calibration 회귀 모델 <code>y = σ({cal_beta_a:.3f}·logit(x) {cal_beta_b:+.3f})</code>은 R²={cal_r_squared:.3f}으로,
-                a={cal_beta_a:.2f}{" (>1: 가격이 극단값에 치우침)" if cal_beta_a > 1 else ""}, b={cal_beta_b:.2f}{" (<0: Yes 방향 과대추정)" if cal_beta_b < 0 else ""}을 보여줍니다.</p>
+                "반반" 구간(35-65%) 과대추정: T-30d <strong>{abs(cal_mid_dev_t30d)}pp</strong> → T-7d <strong>{abs(cal_mid_dev_pp)}pp</strong> → T-1d <strong>{abs(cal_mid_dev_t1d)}pp</strong>.
+                해결일이 가까워질수록 편향이 줄지만, <strong>하루 전에도 {abs(cal_mid_dev_t1d)}pp 과대추정이 남아있습니다.</strong>
+                반면 높은 가격 구간(75-95%)은 반대로 과소추정 경향이 있습니다.
+                Beta Calibration <code>y = σ({cal_beta_a:.3f}·logit(x) {cal_beta_b:+.3f})</code>, R²={cal_r_squared:.3f}:
+                a={cal_beta_a:.2f}{" (>1: 가격이 극단값에 치우침)" if cal_beta_a > 1 else ""}, b={cal_beta_b:.2f}{" (<0: Yes 방향 과대추정)" if cal_beta_b < 0 else ""}.</p>
                 <p class="lang-en">Analysis of {cal_total:,} Polymarket markets reveals <strong>systematic price-probability deviation</strong>.
-                In the "toss-up" range (35-65%), prices <strong>{"overestimate" if cal_mid_dev_pp < 0 else "underestimate"} actual outcomes by {abs(cal_mid_dev_pp)}pp</strong> on average ({cal_mid_dev_count} markets).
-                A market priced at 50% actually resolves Yes only ~{50 + cal_mid_dev_pp:.0f}% of the time.
-                Conversely, high-priced markets (75-95%) tend to <strong>underestimate</strong> actual outcomes.
-                Beta Calibration regression <code>y = σ({cal_beta_a:.3f}·logit(x) {cal_beta_b:+.3f})</code> yields R²={cal_r_squared:.3f}:
+                "Toss-up" range (35-65%) overestimation: T-30d <strong>{abs(cal_mid_dev_t30d)}pp</strong> → T-7d <strong>{abs(cal_mid_dev_pp)}pp</strong> → T-1d <strong>{abs(cal_mid_dev_t1d)}pp</strong>.
+                Bias narrows as resolution approaches, but <strong>{abs(cal_mid_dev_t1d)}pp overestimation persists even 1 day before resolution.</strong>
+                Conversely, high-priced markets (75-95%) tend to underestimate actual outcomes.
+                Beta Calibration <code>y = σ({cal_beta_a:.3f}·logit(x) {cal_beta_b:+.3f})</code>, R²={cal_r_squared:.3f}:
                 a={cal_beta_a:.2f}{" (>1: prices skew toward extremes)" if cal_beta_a > 1 else ""}, b={cal_beta_b:.2f}{" (<0: systematic Yes overestimation)" if cal_beta_b < 0 else ""}.</p>
             </div>
 
@@ -1745,55 +1753,131 @@ def build_html(data):
             }});
         }}
 
-        // Price vs Actual Deviation bar chart (T-7d)
-        if (document.getElementById('deviationBarChart') && calDevSummary['t7d']) {{
-            const devData = calDevSummary['t7d'].filter(b => b.deviation !== null && b.count > 0);
-            const devValues = devData.map(b => b.deviation * 100);  // convert to pp
-            const devColors = devValues.map(v => v < 0 ? 'rgba(255, 107, 107, 0.8)' : 'rgba(78, 205, 196, 0.8)');
+        // Price vs Actual Deviation bar chart (multi-horizon)
+        if (document.getElementById('deviationBarChart')) {{
+            const devHorizons = ['t30d', 't7d', 't1d'];
+            const devHorizonLabels = {{ 't30d': 'T-30d', 't7d': 'T-7d', 't1d': 'T-1d' }};
+            const devHorizonColors = {{
+                't30d': {{ neg: 'rgba(144, 238, 144, 0.75)', pos: 'rgba(144, 238, 144, 0.75)' }},
+                't7d':  {{ neg: 'rgba(100, 200, 255, 0.75)', pos: 'rgba(100, 200, 255, 0.75)' }},
+                't1d':  {{ neg: 'rgba(255, 165, 0, 0.75)',   pos: 'rgba(255, 165, 0, 0.75)' }},
+            }};
+
+            // Use T-7d bins as label source
+            const refData = (calDevSummary['t7d'] || []).filter(b => b.deviation !== null && b.count > 0);
+            const binLabels = refData.map(b => b.bin_label);
+
+            const datasets = devHorizons.filter(h => calDevSummary[h]).map(h => {{
+                const hData = calDevSummary[h].filter(b => b.deviation !== null && b.count > 0);
+                return {{
+                    label: devHorizonLabels[h],
+                    data: hData.map(b => b.deviation * 100),
+                    backgroundColor: devHorizonColors[h].neg,
+                    borderWidth: 0,
+                    _rawData: hData,
+                }};
+            }});
 
             new Chart(document.getElementById('deviationBarChart'), {{
                 type: 'bar',
-                data: {{
-                    labels: devData.map(b => b.bin_label),
-                    datasets: [{{
-                        label: getLang() === 'ko' ? '편차 (pp)' : 'Deviation (pp)',
-                        data: devValues,
-                        backgroundColor: devColors,
-                        borderWidth: 0
-                    }}]
-                }},
+                data: {{ labels: binLabels, datasets: datasets }},
                 options: {{
                     responsive: true,
                     scales: {{
                         y: {{
                             grid: {{ color: '#333' }},
-                            ticks: {{ color: '#888', callback: v => (v > 0 ? '+' : '') + v.toFixed(1) + 'pp' }},
+                            ticks: {{ color: '#888', callback: v => (v > 0 ? '+' : '') + v.toFixed(0) + 'pp' }},
                             title: {{ display: true, text: getLang() === 'ko' ? '편차 (음수 = 과대추정)' : 'Deviation (negative = overestimated)', color: '#888' }}
                         }},
                         x: {{
                             grid: {{ display: false }},
                             ticks: {{ color: '#888' }},
-                            title: {{ display: true, text: getLang() === 'ko' ? '가격 구간' : 'Price Bin', color: '#888' }}
                         }}
                     }},
                     plugins: {{
-                        legend: {{ display: false }},
+                        legend: {{ labels: {{ color: '#ccc' }} }},
                         tooltip: {{ callbacks: {{
                             label: ctx => {{
-                                const bin = devData[ctx.dataIndex];
+                                const ds = ctx.dataset;
+                                const raw = ds._rawData ? ds._rawData[ctx.dataIndex] : null;
                                 const v = ctx.parsed.y;
                                 const sign = v > 0 ? '+' : '';
-                                return sign + v.toFixed(1) + 'pp (' + bin.count + (getLang() === 'ko' ? '건)' : ' markets)');
+                                const cnt = raw ? ' (' + raw.count + (getLang() === 'ko' ? '건)' : ' mkts)') : '';
+                                return ds.label + ': ' + sign + v.toFixed(1) + 'pp' + cnt;
                             }}
-                        }} }},
-                        annotation: {{
-                            annotations: {{
-                                zeroLine: {{
-                                    type: 'line',
-                                    yMin: 0, yMax: 0,
-                                    borderColor: 'rgba(255, 255, 255, 0.4)',
-                                    borderWidth: 1,
-                                    borderDash: [4, 4]
+                        }} }}
+                    }}
+                }}
+            }});
+        }}
+
+        // Beta Calibration Deviation Wave chart (regression - diagonal, per horizon)
+        if (document.getElementById('regressionWaveChart') && Object.keys(calRegression).length > 0) {{
+            const waveHorizons = ['t30d', 't7d', 't1d', 't0'];
+            const waveColors = {{
+                't0':   'rgba(255, 107, 107, 0.9)',
+                't1d':  'rgba(255, 165, 0, 0.9)',
+                't7d':  'rgba(100, 200, 255, 0.9)',
+                't30d': 'rgba(144, 238, 144, 0.9)',
+            }};
+            const waveLabels = {{ 't0': 'T-0', 't1d': 'T-1d', 't7d': 'T-7d', 't30d': 'T-30d' }};
+
+            const waveDatasets = [{{
+                label: getLang() === 'ko' ? '완벽한 보정 (0)' : 'Perfect Calibration (0)',
+                data: [{{ x: 0, y: 0 }}, {{ x: 1, y: 0 }}],
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                borderDash: [5, 5],
+                borderWidth: 1,
+                pointRadius: 0,
+                fill: false,
+            }}];
+
+            waveHorizons.forEach(h => {{
+                const reg = calRegression[h];
+                if (!reg || !reg.regression_line) return;
+                const wavePts = reg.regression_line.map(pt => ({{
+                    x: pt.x,
+                    y: (pt.y - pt.x) * 100,  // deviation in pp
+                }}));
+                waveDatasets.push({{
+                    label: waveLabels[h] + ' (R\u00b2=' + reg.r_squared.toFixed(3) + ')',
+                    data: wavePts,
+                    borderColor: waveColors[h],
+                    backgroundColor: waveColors[h],
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: false,
+                    tension: 0.3,
+                }});
+            }});
+
+            new Chart(document.getElementById('regressionWaveChart'), {{
+                type: 'line',
+                data: {{ datasets: waveDatasets }},
+                options: {{
+                    responsive: true,
+                    scales: {{
+                        x: {{
+                            type: 'linear',
+                            min: 0, max: 1,
+                            title: {{ display: true, text: getLang() === 'ko' ? '가격' : 'Price', color: '#888' }},
+                            grid: {{ color: '#333' }},
+                            ticks: {{ color: '#888', callback: v => (v * 100) + '%' }}
+                        }},
+                        y: {{
+                            title: {{ display: true, text: getLang() === 'ko' ? '편차 (pp)' : 'Deviation (pp)', color: '#888' }},
+                            grid: {{ color: '#333' }},
+                            ticks: {{ color: '#888', callback: v => (v > 0 ? '+' : '') + v.toFixed(0) + 'pp' }}
+                        }}
+                    }},
+                    plugins: {{
+                        legend: {{ labels: {{ color: '#ccc' }} }},
+                        tooltip: {{
+                            callbacks: {{
+                                label: ctx => {{
+                                    const v = ctx.parsed.y;
+                                    const sign = v > 0 ? '+' : '';
+                                    return ctx.dataset.label + ': ' + sign + v.toFixed(1) + 'pp';
                                 }}
                             }}
                         }}
