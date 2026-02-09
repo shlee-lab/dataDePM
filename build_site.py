@@ -251,6 +251,10 @@ def build_html(data):
     acc_kleros = acc.get("kleros_disputes", {})
     acc_pm = acc.get("polymarket_resolved", {})
 
+    # 데이터 기간 정보
+    uma_period = acc_uma_overall.get("data_period", {})
+    kleros_period = acc_kleros.get("data_period", {})
+
     # UMA YES_OR_NO_QUERY resolution distribution for chart
     yesno_res_dist = acc_uma_yesno.get("resolution_distribution", {})
     yesno_details = acc_uma_yesno.get("details", [])
@@ -878,6 +882,10 @@ def build_html(data):
             </div>
 
             <h3>{t('UMA 분쟁 해결 분석', 'UMA Dispute Resolution Analysis')}</h3>
+            <p style="color: #888; font-size: 0.9rem; margin-bottom: 20px;">
+                {t(f'데이터 기간: {uma_period.get("start_date", "?")} ~ {uma_period.get("end_date", "?")} ({uma_period.get("days", 0)}일)',
+                   f'Data period: {uma_period.get("start_date", "?")} ~ {uma_period.get("end_date", "?")} ({uma_period.get("days", 0)} days)')}
+            </p>
 
             <div class="oracle-grid">
                 <div class="chart-container">
@@ -913,7 +921,44 @@ def build_html(data):
                 However, top 5 voters control {acc_uma_overall.get("top5_voter_token_share", 0)}% of voting tokens — decisions are made by a few.</p>
             </div>
 
+            <h3 style="margin-top: 50px;">{t('🚨 해결 불가(Unresolvable) 케이스 상세', '🚨 Unresolvable Cases Details')}</h3>
+            <div class="insight-box" style="background: linear-gradient(135deg, rgba(255, 107, 107, 0.15), rgba(255, 165, 0, 0.15));">
+                <h4 style="color: #ff6b6b;">{t('왜 40%가 해결 불가인가?', 'Why 40% Unresolvable?')}</h4>
+                <p class="lang-ko">YES_OR_NO_QUERY 25건 중 10건({acc_uma_yesno.get("unresolvable_count", 0)/max(acc_uma_yesno.get("total", 1), 1)*100:.0f}%)이 "해결 불가"로 판정되었습니다.
+                UMA 투표자들이 <code>type(int256).min</code> 값을 반환하면 "이 질문은 답할 수 없다"는 의미입니다.
+                주요 원인: 데이터 소스 불명확, 질문 모호, 경기 취소/연기, 검증 불가능한 이벤트.</p>
+                <p class="lang-en">{acc_uma_yesno.get("unresolvable_count", 0)} of {acc_uma_yesno.get("total", 0)} ({acc_uma_yesno.get("unresolvable_count", 0)/max(acc_uma_yesno.get("total", 1), 1)*100:.0f}%) YES_OR_NO_QUERY disputes were marked "Unresolvable".
+                When UMA voters return <code>type(int256).min</code>, it means "this question cannot be answered".
+                Main causes: unclear data sources, ambiguous questions, cancelled/postponed events, unverifiable outcomes.</p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Round</th>
+                        <th>{t('마켓 제목', 'Market Title')}</th>
+                        <th>{t('날짜', 'Date')}</th>
+                        <th>{t('투표자', 'Voters')}</th>
+                        <th>{t('합의율', 'Consensus')}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {"".join(f'''
+                    <tr>
+                        <td>{case.get("round_id", 0)}</td>
+                        <td style="max-width: 400px;">{case.get("title", "Unknown")[:150]}{"..." if len(case.get("title", "")) > 150 else ""}</td>
+                        <td>{case.get("request_date", "?")}</td>
+                        <td>{case.get("voters", 0)}</td>
+                        <td>{case.get("consensus", 0):.1%}</td>
+                    </tr>''' for case in acc_uma_yesno.get("unresolvable_cases", []))}
+                </tbody>
+            </table>
+
             <h3 style="margin-top: 50px;">{t('Kleros Court 분쟁 해결 분석', 'Kleros Court Dispute Resolution Analysis')}</h3>
+            <p style="color: #888; font-size: 0.9rem; margin-bottom: 20px;">
+                {t(f'데이터 기간: {kleros_period.get("start_date", "?")} ~ {kleros_period.get("end_date", "?")} ({kleros_period.get("days", 0)}일)',
+                   f'Data period: {kleros_period.get("start_date", "?")} ~ {kleros_period.get("end_date", "?")} ({kleros_period.get("days", 0)} days)')}
+            </p>
 
             <div class="stat-grid">
                 <div class="stat-card">

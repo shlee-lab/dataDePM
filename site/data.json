@@ -1789,6 +1789,11 @@
           "Price Feed": 31,
           "YES_OR_NO_QUERY": 25
         },
+        "data_period": {
+          "start_date": "2021-02-23",
+          "end_date": "2023-02-27",
+          "days": 733
+        },
         "avg_voters_per_request": 56.1,
         "total_unique_voters": 294,
         "repeat_voters": 216,
@@ -2026,6 +2031,88 @@
             "resolution": "Unresolvable",
             "voters": 59,
             "consensus": 0.78
+          }
+        ],
+        "unresolvable_cases": [
+          {
+            "round_id": 9540,
+            "title": "NHL: Will the Sharks beat the Ducks by more than 1.5 goals in their March 26",
+            "request_date": "2022-03-27",
+            "voters": 62,
+            "consensus": 1.0,
+            "ancillary_data": "q: title: NHL: Will the Sharks beat the Ducks by more than 1.5 goals in their March 26, 10:30 PM ET matchup?, description: In the upcoming NHL game, scheduled for March 26, 10:30 PM ET:\n\nIf the San Jose Sharks win by over 1.5 goals, the market will resolve to “Yes”.\n\nIf the Anaheim Ducks lose by less than 1.5 goals or win, the market will resolve to “No”.\n\nIf the game is not completed by April 2 (11:59:59 PM ET), the market will resolve 50-50. res_data: p1: 0, p2: 1, p3: 0.5. Where p2 correspond"
+          },
+          {
+            "round_id": 9550,
+            "title": "Will US student loan payments resume by May 2",
+            "request_date": "2022-04-17",
+            "voters": 68,
+            "consensus": 0.9172,
+            "ancillary_data": "q: title: Will US student loan payments resume by May 2, 2022?, description: This market asks whether repayment of federal student loans in the United States of America will resume by May 2, 2022.\n\nIf federal student loan repayments resume in the US for all federal student loans at any time between March 22, 2022, and May 2, 2022, 11:59:59 PM ET, this market will resolve to \"Yes\". Otherwise, this market will resolve to \"No\". \n\nFor the purpose of this market's resolution, \"federal student loan re"
+          },
+          {
+            "round_id": 9571,
+            "title": "Will Joe Biden's FiveThirtyEight approval rating be 41.5% or higher on May 28?",
+            "request_date": "2022-05-29",
+            "voters": 56,
+            "consensus": 0.999,
+            "ancillary_data": "q: title: Will Joe Biden's FiveThirtyEight approval rating be 41.5% or higher on May 28?, description: This market will resolve to “Yes” if Joe Biden's approval rating as reported by FiveThirtyEight will be greater than or equal to 41.5% for the day of May 28, 2022. Otherwise, this market will resolve to “No”.\n\nThe resolution source will be FiveThirtyEight's approval rating poll aggregator, https://projects.fivethirtyeight.com/biden-approval-rating/, specifically the approval rating indicated by"
+          },
+          {
+            "round_id": 9573,
+            "title": "Will there be a named tropical system (storm",
+            "request_date": "2022-06-01",
+            "voters": 59,
+            "consensus": 0.9993,
+            "ancillary_data": "q: title: Will there be a named tropical system (storm, hurricane) Alex that forms by May 31, 2022?, description: Tropical storms are given names as soon as they display a rotating circulation pattern and wind speeds of 39 miles per hour (63 kilometers per hour). A tropical storm develops into a hurricane when wind speeds reach 74 mph (119 kph). Hurricane season officially begins on June 1 and ends on November 30 each year. The lists of hurricane names for each season are chosen by the World Met"
+          },
+          {
+            "round_id": 9573,
+            "title": "Will Federico Gutiérrez win the 2022 Colombian presidential election?",
+            "request_date": "2022-06-01",
+            "voters": 59,
+            "consensus": 0.9993,
+            "ancillary_data": "q: title: Will Federico Gutiérrez win the 2022 Colombian presidential election?, description: \nColombian presidents are elected for four-year terms using a two-round system; if no candidate receives a majority of the vote in the first round, a runoff is held between the top two candidates. The first round of elections for the President of Colombia is scheduled to take place on May 29, 2022. Incumbent President Iván Duque is ineligible for a second term.\n\nIf Federico Gutiérrez wins the 2022 Colom"
+          },
+          {
+            "round_id": 9573,
+            "title": "Will an earthquake measuring 8.0 or above occur anywhere on Earth before June 1",
+            "request_date": "2022-06-01",
+            "voters": 59,
+            "consensus": 0.9991,
+            "ancillary_data": "q: title: Will an earthquake measuring 8.0 or above occur anywhere on Earth before June 1, 2022?, description: This is a market on whether at least one earthquake with a magnitude of 8.0 or higher occurs on Earth between January 1, 2022 (12:00:00 AM ET) and June 1, 2022 (12:00:00 AM ET), as measured by the U.S. Geological Survey. \n\nThis market will resolve to “Yes” if the resolution source lists 1 or more earthquakes with a magnitude of 8.0 or higher anywhere on earth for that period. Otherwise "
+          },
+          {
+            "round_id": 9586,
+            "title": "Will ‘Elvis’ gross more than $45 million domestically on its opening weekend?",
+            "request_date": "2022-06-27",
+            "voters": 61,
+            "consensus": 0.9664,
+            "ancillary_data": "q: title: Will ‘Elvis’ gross more than $45 million domestically on its opening weekend?, description: 'Elvis' is a 2022 biographical musical drama film directed by Baz Luhrmann chronicling the life and career of singer and actor Elvis Presley, from his early days as a child to becoming a rock and roll star and movie star, as well as his complex relationship with his manager Colonel Tom Parker. It premiered at several festivals and is scheduled to be theatrically released by Warner Bros. Pictures"
+          },
+          {
+            "round_id": 9683,
+            "title": "Will Donald Trump be President of the USA on January 6 2023?",
+            "request_date": "2023-01-07",
+            "voters": 63,
+            "consensus": 1.0,
+            "ancillary_data": "q: title: Will Donald Trump be President of the USA on January 6 2023?, description: This is a market on if Donald Trump will be President of the United States on January 6, 2023, 11:59 PM ET. \n\nThis market will resolve to “Yes“ if, on the resolution date, Donald Trump is the current President of the United States, officially substantiated by official US government sources, like the links provided as the resolution source. \n\nIf, for any reason, Donald Trump is not the sitting President of the Un"
+          },
+          {
+            "round_id": 9707,
+            "title": "NBA: Golden State Warriors vs. Minnesota Timberwolves 2023-02-26",
+            "request_date": "2023-02-25",
+            "voters": 58,
+            "consensus": 1.0,
+            "ancillary_data": "q: title: NBA: Golden State Warriors vs. Minnesota Timberwolves 2023-02-26, description: In the upcoming NBA game, scheduled for February 26 at 7:30 PM:\n\nIf the Golden State Warriors win, the market will resolve to “Warriors”.\n\nIf the Minnesota Timberwolves win, the market will resolve to “Timberwolves”.\n\n If the game is not completed by April 16, 2023 (11:59:59 PM EST), the market will resolve 50-50. res_data: p1: 0, p2: 1, p3: 0.5. Where p1 corresponds to Timberwolves, p2 to Warriors, p3 to un"
+          },
+          {
+            "round_id": 9707,
+            "title": "NBA: LA Clippers vs. Sacramento Kings 2023-02-24",
+            "request_date": "2023-02-25",
+            "voters": 59,
+            "consensus": 0.78,
+            "ancillary_data": "q: title: NBA: LA Clippers vs. Sacramento Kings 2023-02-24, description: In the upcoming NBA game, scheduled for February 24 at 10:30 PM ET:\n\nIf the LA Clippers win, the market will resolve to “Clippers”.\n\nIf the Sacramento Kings win, the market will resolve to “Kings”.\n\nIf the game is not completed by April 16, 2023 (11:59:59 PM ET), the market will resolve 50-50 res_data: p1: 0, p2: 1, p3: 0.5. Where p1 corresponds to Kings, p2 to Clippers, p3 to unknown/50-50,initializer:b2996aa129c65849cd1fa"
           }
         ]
       }
@@ -2878,7 +2965,12 @@
           "num_jurors": 5,
           "consensus": 0.8
         }
-      ]
+      ],
+      "data_period": {
+        "start_date": "2024-11-14",
+        "end_date": "2025-12-23",
+        "days": 404
+      }
     }
   }
 }

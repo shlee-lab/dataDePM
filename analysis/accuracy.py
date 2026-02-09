@@ -68,6 +68,14 @@ def analyze_uma_disputes() -> dict:
     if req_df.empty:
         return {}
 
+    # 데이터 기간 정보 추가
+    req_df['request_datetime'] = pd.to_datetime(req_df['request_time'], unit='s')
+    data_period = {
+        "start_date": req_df['request_datetime'].min().strftime("%Y-%m-%d"),
+        "end_date": req_df['request_datetime'].max().strftime("%Y-%m-%d"),
+        "days": int((req_df['request_datetime'].max() - req_df['request_datetime'].min()).days),
+    }
+
     # 식별자 유형별 통계
     identifier_counts = req_df["identifier"].value_counts()
 
@@ -126,10 +134,43 @@ def analyze_uma_disputes() -> dict:
             })
         yesno_stats["details"] = yesno_details
 
+        # Unresolvable 케이스 상세 정보
+        unresolvable_cases = yesno[yesno["resolution_label"] == "Unresolvable"].copy()
+        if not unresolvable_cases.empty:
+            unresolvable_list = []
+            for _, row in unresolvable_cases.iterrows():
+                # ancillary_data에서 질문 제목 추출 시도
+                ancillary = str(row.get("ancillary_data", ""))
+                title = "Unknown"
+                if "title:" in ancillary:
+                    try:
+                        title_start = ancillary.index("title:") + 6
+                        title_end = ancillary.find(",", title_start)
+                        if title_end == -1:
+                            title_end = ancillary.find("description:", title_start)
+                        if title_end == -1:
+                            title_end = min(title_start + 200, len(ancillary))
+                        title = ancillary[title_start:title_end].strip()
+                    except Exception:
+                        title = ancillary[:100] if ancillary else "Unknown"
+
+                request_dt = pd.to_datetime(row.get("request_time", 0), unit='s')
+
+                unresolvable_list.append({
+                    "round_id": int(row["round_id"]),
+                    "title": title,
+                    "request_date": request_dt.strftime("%Y-%m-%d"),
+                    "voters": int(row.get("num_voters", 0)),
+                    "consensus": round(float(row.get("consensus_rate", 0)), 4),
+                    "ancillary_data": ancillary[:500] if ancillary else "",
+                })
+            yesno_stats["unresolvable_cases"] = unresolvable_list
+
     # 전체 UMA DVM 통계
     overall_stats = {
         "total_requests": len(req_df),
         "identifier_categories": {str(k): int(v) for k, v in cat_counts.items()},
+        "data_period": data_period,
     }
 
     if "num_voters" in req_df.columns:
@@ -186,6 +227,14 @@ def analyze_kleros_disputes() -> dict:
     disputes_df = pd.read_parquet(disputes_path)
     if disputes_df.empty:
         return {}
+
+    # 데이터 기간 정보 추가
+    disputes_df['created_datetime'] = pd.to_datetime(disputes_df['created_time'], unit='s')
+    data_period = {
+        "start_date": disputes_df['created_datetime'].min().strftime("%Y-%m-%d"),
+        "end_date": disputes_df['created_datetime'].max().strftime("%Y-%m-%d"),
+        "days": int((disputes_df['created_datetime'].max() - disputes_df['created_datetime'].min()).days),
+    }
 
     total = len(disputes_df)
 
@@ -272,6 +321,7 @@ def analyze_kleros_disputes() -> dict:
         "appeal_rate": appeal_rate,
         "voter_stats": voter_stats,
         "dispute_details": dispute_details,
+        "data_period": data_period,
     }
 
 
