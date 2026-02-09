@@ -2040,7 +2040,9 @@
             "request_date": "2022-03-27",
             "voters": 62,
             "consensus": 1.0,
-            "ancillary_data": "q: title: NHL: Will the Sharks beat the Ducks by more than 1.5 goals in their March 26, 10:30 PM ET matchup?, description: In the upcoming NHL game, scheduled for March 26, 10:30 PM ET:\n\nIf the San Jose Sharks win by over 1.5 goals, the market will resolve to “Yes”.\n\nIf the Anaheim Ducks lose by less than 1.5 goals or win, the market will resolve to “No”.\n\nIf the game is not completed by April 2 (11:59:59 PM ET), the market will resolve 50-50. res_data: p1: 0, p2: 1, p3: 0.5. Where p2 correspond"
+            "reason": "Sports: Game cancelled/postponed or unclear scoring",
+            "link": "https://oracle.umaproject.org/?transactionHash=0x29849f5e9ca6747926c2c3ea14dd9dc34b881e07a064a14b25d74dea20580036",
+            "tx_hash": "0x29849f5e9ca6747926c2c3ea14dd9dc34b881e07a064a14b25d74dea20580036"
           },
           {
             "round_id": 9550,
@@ -2048,7 +2050,9 @@
             "request_date": "2022-04-17",
             "voters": 68,
             "consensus": 0.9172,
-            "ancillary_data": "q: title: Will US student loan payments resume by May 2, 2022?, description: This market asks whether repayment of federal student loans in the United States of America will resume by May 2, 2022.\n\nIf federal student loan repayments resume in the US for all federal student loans at any time between March 22, 2022, and May 2, 2022, 11:59:59 PM ET, this market will resolve to \"Yes\". Otherwise, this market will resolve to \"No\". \n\nFor the purpose of this market's resolution, \"federal student loan re"
+            "reason": "Politics/Policy: Policy changed or resolution criteria unclear",
+            "link": "https://oracle.umaproject.org/?transactionHash=0x8ca6c6b34ff74205ad99b29400b0a23cefb3e66e3a868edd16b1f08088236a85",
+            "tx_hash": "0x8ca6c6b34ff74205ad99b29400b0a23cefb3e66e3a868edd16b1f08088236a85"
           },
           {
             "round_id": 9571,
@@ -2056,7 +2060,9 @@
             "request_date": "2022-05-29",
             "voters": 56,
             "consensus": 0.999,
-            "ancillary_data": "q: title: Will Joe Biden's FiveThirtyEight approval rating be 41.5% or higher on May 28?, description: This market will resolve to “Yes” if Joe Biden's approval rating as reported by FiveThirtyEight will be greater than or equal to 41.5% for the day of May 28, 2022. Otherwise, this market will resolve to “No”.\n\nThe resolution source will be FiveThirtyEight's approval rating poll aggregator, https://projects.fivethirtyeight.com/biden-approval-rating/, specifically the approval rating indicated by"
+            "reason": "Data source: FiveThirtyEight data unavailable at resolution time",
+            "link": "https://oracle.umaproject.org/?transactionHash=0x5576db81f7e1b2a1fe31cd8401c2a244e7baeb315c36203d957f342b5b8d4112",
+            "tx_hash": "0x5576db81f7e1b2a1fe31cd8401c2a244e7baeb315c36203d957f342b5b8d4112"
           },
           {
             "round_id": 9573,
@@ -2064,7 +2070,9 @@
             "request_date": "2022-06-01",
             "voters": 59,
             "consensus": 0.9993,
-            "ancillary_data": "q: title: Will there be a named tropical system (storm, hurricane) Alex that forms by May 31, 2022?, description: Tropical storms are given names as soon as they display a rotating circulation pattern and wind speeds of 39 miles per hour (63 kilometers per hour). A tropical storm develops into a hurricane when wind speeds reach 74 mph (119 kph). Hurricane season officially begins on June 1 and ends on November 30 each year. The lists of hurricane names for each season are chosen by the World Met"
+            "reason": "Natural event: Verification source unclear or event definition ambiguous",
+            "link": "https://oracle.umaproject.org/?transactionHash=0x74b3dc110ff996499156d7b8690dcbca41a1def7b61a970da0979665a4c6b8ce",
+            "tx_hash": "0x74b3dc110ff996499156d7b8690dcbca41a1def7b61a970da0979665a4c6b8ce"
           },
           {
             "round_id": 9573,
@@ -2072,7 +2080,9 @@
             "request_date": "2022-06-01",
             "voters": 59,
             "consensus": 0.9993,
-            "ancillary_data": "q: title: Will Federico Gutiérrez win the 2022 Colombian presidential election?, description: \nColombian presidents are elected for four-year terms using a two-round system; if no candidate receives a majority of the vote in the first round, a runoff is held between the top two candidates. The first round of elections for the President of Colombia is scheduled to take place on May 29, 2022. Incumbent President Iván Duque is ineligible for a second term.\n\nIf Federico Gutiérrez wins the 2022 Colom"
+            "reason": "Politics/Policy: Policy changed or resolution criteria unclear",
+            "link": "https://oracle.umaproject.org/?transactionHash=0xd781beaad0b2131764af526c4e24fa22565636e452e0e096c8c4e4fe73d3b03c",
+            "tx_hash": "0xd781beaad0b2131764af526c4e24fa22565636e452e0e096c8c4e4fe73d3b03c"
           },
           {
             "round_id": 9573,
@@ -2080,7 +2090,9 @@
             "request_date": "2022-06-01",
             "voters": 59,
             "consensus": 0.9991,
-            "ancillary_data": "q: title: Will an earthquake measuring 8.0 or above occur anywhere on Earth before June 1, 2022?, description: This is a market on whether at least one earthquake with a magnitude of 8.0 or higher occurs on Earth between January 1, 2022 (12:00:00 AM ET) and June 1, 2022 (12:00:00 AM ET), as measured by the U.S. Geological Survey. \n\nThis market will resolve to “Yes” if the resolution source lists 1 or more earthquakes with a magnitude of 8.0 or higher anywhere on earth for that period. Otherwise "
+            "reason": "Natural event: Verification source unclear or event definition ambiguous",
+            "link": "https://oracle.umaproject.org/?transactionHash=0x4a0fee78baf064ecd87475cf6c91f015e374c1ee8b8316aa5286cf1daf8e9eac",
+            "tx_hash": "0x4a0fee78baf064ecd87475cf6c91f015e374c1ee8b8316aa5286cf1daf8e9eac"
           },
           {
             "round_id": 9586,
@@ -2088,7 +2100,9 @@
             "request_date": "2022-06-27",
             "voters": 61,
             "consensus": 0.9664,
-            "ancillary_data": "q: title: Will ‘Elvis’ gross more than $45 million domestically on its opening weekend?, description: 'Elvis' is a 2022 biographical musical drama film directed by Baz Luhrmann chronicling the life and career of singer and actor Elvis Presley, from his early days as a child to becoming a rock and roll star and movie star, as well as his complex relationship with his manager Colonel Tom Parker. It premiered at several festivals and is scheduled to be theatrically released by Warner Bros. Pictures"
+            "reason": "Box office: Official numbers not released by resolution deadline",
+            "link": "https://oracle.umaproject.org/?transactionHash=0x1530e80d4861ddfb3a83cf452ddd3fa4aa520aa107f9c6561e059c648bdff60f",
+            "tx_hash": "0x1530e80d4861ddfb3a83cf452ddd3fa4aa520aa107f9c6561e059c648bdff60f"
           },
           {
             "round_id": 9683,
@@ -2096,7 +2110,9 @@
             "request_date": "2023-01-07",
             "voters": 63,
             "consensus": 1.0,
-            "ancillary_data": "q: title: Will Donald Trump be President of the USA on January 6 2023?, description: This is a market on if Donald Trump will be President of the United States on January 6, 2023, 11:59 PM ET. \n\nThis market will resolve to “Yes“ if, on the resolution date, Donald Trump is the current President of the United States, officially substantiated by official US government sources, like the links provided as the resolution source. \n\nIf, for any reason, Donald Trump is not the sitting President of the Un"
+            "reason": "Political event: Resolution criteria became meaningless or ambiguous",
+            "link": "https://oracle.umaproject.org/?transactionHash=0x177430329488c019ef2125b9db78e4d55f72560d5c060cba5bfb59b835432920",
+            "tx_hash": "0x177430329488c019ef2125b9db78e4d55f72560d5c060cba5bfb59b835432920"
           },
           {
             "round_id": 9707,
@@ -2104,7 +2120,9 @@
             "request_date": "2023-02-25",
             "voters": 58,
             "consensus": 1.0,
-            "ancillary_data": "q: title: NBA: Golden State Warriors vs. Minnesota Timberwolves 2023-02-26, description: In the upcoming NBA game, scheduled for February 26 at 7:30 PM:\n\nIf the Golden State Warriors win, the market will resolve to “Warriors”.\n\nIf the Minnesota Timberwolves win, the market will resolve to “Timberwolves”.\n\n If the game is not completed by April 16, 2023 (11:59:59 PM EST), the market will resolve 50-50. res_data: p1: 0, p2: 1, p3: 0.5. Where p1 corresponds to Timberwolves, p2 to Warriors, p3 to un"
+            "reason": "Sports: Game cancelled/postponed or unclear scoring",
+            "link": "https://oracle.umaproject.org/?transactionHash=0x96d340ed66ec7580fb65ce3354b051f5d84ee42374f20d62573c6fca6f5e01ac",
+            "tx_hash": "0x96d340ed66ec7580fb65ce3354b051f5d84ee42374f20d62573c6fca6f5e01ac"
           },
           {
             "round_id": 9707,
@@ -2112,7 +2130,9 @@
             "request_date": "2023-02-25",
             "voters": 59,
             "consensus": 0.78,
-            "ancillary_data": "q: title: NBA: LA Clippers vs. Sacramento Kings 2023-02-24, description: In the upcoming NBA game, scheduled for February 24 at 10:30 PM ET:\n\nIf the LA Clippers win, the market will resolve to “Clippers”.\n\nIf the Sacramento Kings win, the market will resolve to “Kings”.\n\nIf the game is not completed by April 16, 2023 (11:59:59 PM ET), the market will resolve 50-50 res_data: p1: 0, p2: 1, p3: 0.5. Where p1 corresponds to Kings, p2 to Clippers, p3 to unknown/50-50,initializer:b2996aa129c65849cd1fa"
+            "reason": "Sports: Game cancelled/postponed or unclear scoring",
+            "link": "https://oracle.umaproject.org/?transactionHash=0x6c7f5dedce5d0d49b348b5183014bcf3ed24c75fc50da73ae845fb388013c0c4",
+            "tx_hash": "0x6c7f5dedce5d0d49b348b5183014bcf3ed24c75fc50da73ae845fb388013c0c4"
           }
         ]
       }
@@ -2964,6 +2984,96 @@
           "num_votes": 5,
           "num_jurors": 5,
           "consensus": 0.8
+        }
+      ],
+      "unresolved_cases": [
+        {
+          "dispute_id": 19,
+          "arbitrable": "0xb5526d022962a1fff6ed32c93e8b714c901f4323",
+          "created_date": "2025-03-07",
+          "num_jurors": 2,
+          "num_votes": 2,
+          "num_appeals": 1,
+          "reason": "Under appeal (1 appeal event(s)) - ruling not final",
+          "link": "https://arbiscan.io/tx/0x47cf10b37aed51d0fb239efa80d1aa5fc9e6df79f317ad4e6ff3cd6d75e16470",
+          "tx_hash": "0x47cf10b37aed51d0fb239efa80d1aa5fc9e6df79f317ad4e6ff3cd6d75e16470"
+        },
+        {
+          "dispute_id": 36,
+          "arbitrable": "0xb5526d022962a1fff6ed32c93e8b714c901f4323",
+          "created_date": "2025-05-05",
+          "num_jurors": 3,
+          "num_votes": 2,
+          "num_appeals": 1,
+          "reason": "Under appeal (1 appeal event(s)) - ruling not final",
+          "link": "https://arbiscan.io/tx/0x2ffd194be549bfe269aad6f5e8114cf85120fc94b44d2e829391fcdece2f2908",
+          "tx_hash": "0x2ffd194be549bfe269aad6f5e8114cf85120fc94b44d2e829391fcdece2f2908"
+        },
+        {
+          "dispute_id": 54,
+          "arbitrable": "0xb5526d022962a1fff6ed32c93e8b714c901f4323",
+          "created_date": "2025-05-26",
+          "num_jurors": 5,
+          "num_votes": 5,
+          "num_appeals": 1,
+          "reason": "Under appeal (1 appeal event(s)) - ruling not final",
+          "link": "https://arbiscan.io/tx/0xc4971623e21054bfee938f348cf6169c78bb038204c71b6e5668944bb6227732",
+          "tx_hash": "0xc4971623e21054bfee938f348cf6169c78bb038204c71b6e5668944bb6227732"
+        },
+        {
+          "dispute_id": 94,
+          "arbitrable": "0xb5526d022962a1fff6ed32c93e8b714c901f4323",
+          "created_date": "2025-08-30",
+          "num_jurors": 1,
+          "num_votes": 1,
+          "num_appeals": 1,
+          "reason": "Under appeal (1 appeal event(s)) - ruling not final",
+          "link": "https://arbiscan.io/tx/0x0a5beac60c2964670278fc48dd64eb9612b79b60708ecb7f7adf82fcd9e10757",
+          "tx_hash": "0x0a5beac60c2964670278fc48dd64eb9612b79b60708ecb7f7adf82fcd9e10757"
+        },
+        {
+          "dispute_id": 95,
+          "arbitrable": "0xb5526d022962a1fff6ed32c93e8b714c901f4323",
+          "created_date": "2025-08-30",
+          "num_jurors": 1,
+          "num_votes": 1,
+          "num_appeals": 1,
+          "reason": "Under appeal (1 appeal event(s)) - ruling not final",
+          "link": "https://arbiscan.io/tx/0xc010ec9a8d1a5eaf6b3c4ace681057a0f1b87dfb3fe0487d1f765d388a9a7aae",
+          "tx_hash": "0xc010ec9a8d1a5eaf6b3c4ace681057a0f1b87dfb3fe0487d1f765d388a9a7aae"
+        },
+        {
+          "dispute_id": 96,
+          "arbitrable": "0xb5526d022962a1fff6ed32c93e8b714c901f4323",
+          "created_date": "2025-08-30",
+          "num_jurors": 1,
+          "num_votes": 1,
+          "num_appeals": 1,
+          "reason": "Under appeal (1 appeal event(s)) - ruling not final",
+          "link": "https://arbiscan.io/tx/0x08b99e3b18ece7438bd3b789f3de73097a5a0cebdc9eb8b633e15d3a02600bbf",
+          "tx_hash": "0x08b99e3b18ece7438bd3b789f3de73097a5a0cebdc9eb8b633e15d3a02600bbf"
+        },
+        {
+          "dispute_id": 99,
+          "arbitrable": "0xb5526d022962a1fff6ed32c93e8b714c901f4323",
+          "created_date": "2025-08-31",
+          "num_jurors": 1,
+          "num_votes": 1,
+          "num_appeals": 1,
+          "reason": "Under appeal (1 appeal event(s)) - ruling not final",
+          "link": "https://arbiscan.io/tx/0xfde28accdb8893ecf0adf5d6596e1746f59d8ac7a288087d4a585e0136db340a",
+          "tx_hash": "0xfde28accdb8893ecf0adf5d6596e1746f59d8ac7a288087d4a585e0136db340a"
+        },
+        {
+          "dispute_id": 102,
+          "arbitrable": "0xb5526d022962a1fff6ed32c93e8b714c901f4323",
+          "created_date": "2025-09-05",
+          "num_jurors": 1,
+          "num_votes": 0,
+          "num_appeals": 1,
+          "reason": "Jurors drawn but no votes cast - awaiting voting period",
+          "link": "https://arbiscan.io/tx/0x601777643d12d416476494ae192d9cc4aa4b757cf16d2049f32707ba350e1a1f",
+          "tx_hash": "0x601777643d12d416476494ae192d9cc4aa4b757cf16d2049f32707ba350e1a1f"
         }
       ],
       "data_period": {

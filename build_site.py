@@ -940,16 +940,20 @@ def build_html(data):
                         <th>{t('날짜', 'Date')}</th>
                         <th>{t('투표자', 'Voters')}</th>
                         <th>{t('합의율', 'Consensus')}</th>
+                        <th>{t('이유', 'Reason')}</th>
+                        <th>{t('링크', 'Link')}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {"".join(f'''
                     <tr>
-                        <td>{case.get("round_id", 0)}</td>
-                        <td style="max-width: 400px;">{case.get("title", "Unknown")[:150]}{"..." if len(case.get("title", "")) > 150 else ""}</td>
+                        <td><a href="https://etherscan.io/tx/{case.get("tx_hash", "")}" target="_blank" style="color: #6cb6ff; text-decoration: none;">{case.get("round_id", 0)}</a></td>
+                        <td style="max-width: 350px;">{case.get("title", "Unknown")[:120]}{"..." if len(case.get("title", "")) > 120 else ""}</td>
                         <td>{case.get("request_date", "?")}</td>
                         <td>{case.get("voters", 0)}</td>
                         <td>{case.get("consensus", 0):.1%}</td>
+                        <td style="max-width: 250px; font-size: 0.85rem; color: #ffa500;">{case.get("reason", "Unknown")}</td>
+                        <td><a href="{case.get("link", "#")}" target="_blank" style="color: #6cb6ff;">🔗</a></td>
                     </tr>''' for case in acc_uma_yesno.get("unresolvable_cases", []))}
                 </tbody>
             </table>
@@ -1001,6 +1005,45 @@ def build_html(data):
                 Of {kleros_voter_stats.get("total_unique_voters", 0)} unique voters, {kleros_voter_stats.get("repeat_voters", 0)} ({kleros_voter_stats.get("repeat_voter_ratio", 0)}%) participated in multiple disputes,
                 showing that a small group of professional jurors drives dispute resolution.</p>
             </div>
+
+            {"" if acc_kleros.get("unresolved_count", 0) == 0 else f'''
+            <h3 style="margin-top: 50px;">{t('⏳ 미해결(Unresolved) 분쟁 상세', '⏳ Unresolved Disputes Details')}</h3>
+            <div class="insight-box" style="background: linear-gradient(135deg, rgba(100, 200, 255, 0.15), rgba(255, 165, 0, 0.15));">
+                <h4 style="color: #64c8ff;">{t('왜 아직 해결되지 않았는가?', 'Why Still Unresolved?')}</h4>
+                <p class="lang-ko">{acc_kleros.get("total_disputes", 0)}건 중 {acc_kleros.get("unresolved_count", 0)}건({acc_kleros.get("unresolved_count", 0)/max(acc_kleros.get("total_disputes", 1), 1)*100:.1f}%)이 아직 판결이 내려지지 않았습니다.
+                주요 원인: 배심원 선발 진행중, 투표 기간 대기중, 항소 절차 진행중, 시스템 지연.</p>
+                <p class="lang-en">{acc_kleros.get("unresolved_count", 0)} of {acc_kleros.get("total_disputes", 0)} disputes ({acc_kleros.get("unresolved_count", 0)/max(acc_kleros.get("total_disputes", 1), 1)*100:.1f}%) remain unresolved.
+                Main causes: juror selection in progress, awaiting voting period, under appeal, system delays.</p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Dispute ID</th>
+                        <th>{t('Arbitrable 주소', 'Arbitrable')}</th>
+                        <th>{t('생성일', 'Created')}</th>
+                        <th>{t('배심원', 'Jurors')}</th>
+                        <th>{t('투표', 'Votes')}</th>
+                        <th>{t('항소', 'Appeals')}</th>
+                        <th>{t('이유', 'Reason')}</th>
+                        <th>{t('링크', 'Link')}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {"".join(f"""
+                    <tr>
+                        <td>{case.get("dispute_id", 0)}</td>
+                        <td class="address"><a href="https://arbiscan.io/address/{case.get('arbitrable', '')}" target="_blank" style="color: #6cb6ff; text-decoration: none;">{case.get("arbitrable", "?")[:10]}...{case.get("arbitrable", "")[-8:]}</a></td>
+                        <td>{case.get("created_date", "?")}</td>
+                        <td>{case.get("num_jurors", 0)}</td>
+                        <td>{case.get("num_votes", 0)}</td>
+                        <td>{case.get("num_appeals", 0)}</td>
+                        <td style="max-width: 200px; font-size: 0.85rem; color: #64c8ff;">{case.get("reason", "Unknown")}</td>
+                        <td><a href="{case.get("link", "#")}" target="_blank" style="color: #6cb6ff;">🔗</a></td>
+                    </tr>""" for case in acc_kleros.get("unresolved_cases", []))}
+                </tbody>
+            </table>
+            '''}
 
             <div class="download-links">
                 <a href="uma_decoded_requests.csv" download>📥 {t('UMA 디코딩 요청', 'UMA Decoded Requests')}</a>

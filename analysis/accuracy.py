@@ -139,9 +139,11 @@ def analyze_uma_disputes() -> dict:
         if not unresolvable_cases.empty:
             unresolvable_list = []
             for _, row in unresolvable_cases.iterrows():
-                # ancillary_data에서 질문 제목 추출 시도
+                # ancillary_data에서 정보 추출
                 ancillary = str(row.get("ancillary_data", ""))
                 title = "Unknown"
+                description = ""
+
                 if "title:" in ancillary:
                     try:
                         title_start = ancillary.index("title:") + 6
@@ -154,6 +156,39 @@ def analyze_uma_disputes() -> dict:
                     except Exception:
                         title = ancillary[:100] if ancillary else "Unknown"
 
+                if "description:" in ancillary:
+                    try:
+                        desc_start = ancillary.index("description:") + 12
+                        desc_end = min(desc_start + 300, len(ancillary))
+                        description = ancillary[desc_start:desc_end].strip()
+                    except Exception:
+                        pass
+
+                # Unresolvable 이유 자동 판단
+                reason = "Unknown"
+                title_lower = title.lower()
+                desc_lower = description.lower()
+                full_text = (title_lower + " " + desc_lower)
+
+                # 우선순위로 체크 (더 구체적인 것부터)
+                if "fivethirtyeight" in full_text or ("approval rating" in title_lower and "biden" in full_text):
+                    reason = "Data source: FiveThirtyEight data unavailable at resolution time"
+                elif any(sport in title_lower for sport in ["nhl", "nba", "nfl", "mlb", "soccer", "game", "match"]):
+                    reason = "Sports: Game cancelled/postponed or unclear scoring"
+                elif "earthquake" in title_lower or "tropical" in title_lower or "storm" in title_lower:
+                    reason = "Natural event: Verification source unclear or event definition ambiguous"
+                elif "gross" in title_lower and "million" in title_lower:
+                    reason = "Box office: Official numbers not released by resolution deadline"
+                elif "president" in title_lower and "trump" in title_lower:
+                    reason = "Political event: Resolution criteria became meaningless or ambiguous"
+                elif "student loan" in title_lower or "election" in title_lower or "biden" in title_lower:
+                    reason = "Politics/Policy: Policy changed or resolution criteria unclear"
+                else:
+                    reason = "Resolution criteria unclear or data source unavailable"
+
+                # 링크 생성 시도 (Polymarket URL 추출 또는 기본 UMA 링크)
+                link = f"https://oracle.umaproject.org/?transactionHash={row.get('tx_hash', '')}" if row.get('tx_hash') else ""
+
                 request_dt = pd.to_datetime(row.get("request_time", 0), unit='s')
 
                 unresolvable_list.append({
@@ -162,7 +197,9 @@ def analyze_uma_disputes() -> dict:
                     "request_date": request_dt.strftime("%Y-%m-%d"),
                     "voters": int(row.get("num_voters", 0)),
                     "consensus": round(float(row.get("consensus_rate", 0)), 4),
-                    "ancillary_data": ancillary[:500] if ancillary else "",
+                    "reason": reason,
+                    "link": link,
+                    "tx_hash": str(row.get("tx_hash", "")),
                 })
             yesno_stats["unresolvable_cases"] = unresolvable_list
 
@@ -310,6 +347,46 @@ def analyze_kleros_disputes() -> dict:
             "consensus": round(float(row.get("consensus_rate", 0)), 4),
         })
 
+    # 미해결(Unresolved) 케이스 상세 정보
+    unresolved_cases = disputes_df[disputes_df["ruling"].isna() | (disputes_df["ruling"] == 0)].copy()
+    unresolved_list = []
+    if not unresolved_cases.empty:
+        for _, row in unresolved_cases.iterrows():
+            created_dt = pd.to_datetime(row.get("created_time", 0), unit='s')
+
+            # 미해결 이유 판단
+            num_draws = int(row.get("num_draws", 0))
+            num_votes = int(row.get("num_votes", 0))
+            num_appeals = int(row.get("num_appeals", 0))
+
+            if num_draws == 0:
+                reason = "No jurors drawn yet - dispute in early stage"
+            elif num_votes == 0:
+                reason = "Jurors drawn but no votes cast - awaiting voting period"
+            elif num_appeals > 0:
+                reason = f"Under appeal ({num_appeals} appeal event(s)) - ruling not final"
+            else:
+                reason = "Voting completed but ruling not yet issued"
+
+            # Arbitrum Arbiscan 링크
+            arbitrable = row.get("arbitrable", "")
+            dispute_id = int(row.get("dispute_id", 0))
+            tx_hash = row.get("tx_hash", "")
+
+            arbiscan_link = f"https://arbiscan.io/tx/{tx_hash}" if tx_hash else ""
+
+            unresolved_list.append({
+                "dispute_id": dispute_id,
+                "arbitrable": arbitrable,
+                "created_date": created_dt.strftime("%Y-%m-%d"),
+                "num_jurors": int(row.get("num_jurors_drawn", 0)),
+                "num_votes": num_votes,
+                "num_appeals": num_appeals,
+                "reason": reason,
+                "link": arbiscan_link,
+                "tx_hash": tx_hash,
+            })
+
     return {
         "total_disputes": total,
         "resolved_count": resolved_count,
@@ -321,6 +398,7 @@ def analyze_kleros_disputes() -> dict:
         "appeal_rate": appeal_rate,
         "voter_stats": voter_stats,
         "dispute_details": dispute_details,
+        "unresolved_cases": unresolved_list,
         "data_period": data_period,
     }
 
