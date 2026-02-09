@@ -25,7 +25,15 @@
   - Kleros Ruling 분포 도넛, 배심원 참여 빈도 차트
   - 한/영 전환 지원
 
+## 예측 Calibration 분석 (Section 6)
+- [x] `collectors/polymarket_prices.py` 생성 (clobTokenIds + 가격 히스토리 + 스냅샷)
+- [x] `analysis/calibration.py` 생성 (Calibration curve, Brier score, 거래량 티어)
+- [x] `build_site.py` Section 6 추가 (Calibration Curve, Brier Horizon, Volume Tier 차트)
+- [ ] `polymarket_prices.py` 실행 → 데이터 수집
+- [ ] `build_site.py` 재생성 → Section 6 렌더링 확인
+
 ## 완료 기준
 - [x] 6개월 히스토리컬 데이터 수집 완료
 - [x] 각 리스크별 핵심 지표 산출
 - [x] 오라클 정확성 검증 섹션 추가
+- [ ] 예측 Calibration 분석 수집 및 시각화 완료

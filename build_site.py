@@ -10,6 +10,7 @@ import pandas as pd
 import numpy as np
 from collectors.concentration_metrics import calculate_all_metrics, interpret_hhi, interpret_gini
 from analysis.accuracy import analyze_all
+from analysis.calibration import analyze_calibration
 
 DATA_DIR = Path("data")
 SITE_DIR = Path("site")
@@ -207,6 +208,18 @@ def load_data():
         kleros_disp_df.to_csv(SITE_DIR / "kleros_decoded_disputes.csv", index=False)
         print(f"  CSV 저장: site/kleros_decoded_disputes.csv ({len(kleros_disp_df)} rows)")
 
+    # Section 6: Calibration analysis
+    print("  Calibration 분석 중...")
+    calibration_data = analyze_calibration()
+    data["calibration"] = calibration_data
+
+    # Calibration snapshots CSV export
+    cal_path = DATA_DIR / "polymarket_calibration_snapshots.parquet"
+    if cal_path.exists():
+        cal_df = pd.read_parquet(cal_path)
+        cal_df.to_csv(SITE_DIR / "calibration_snapshots.csv", index=False)
+        print(f"  CSV 저장: site/calibration_snapshots.csv ({len(cal_df)} rows)")
+
     return data
 
 
@@ -264,6 +277,22 @@ def build_html(data):
     kleros_dispute_details = acc_kleros.get("dispute_details", [])
     kleros_voter_stats = acc_kleros.get("voter_stats", {})
     kleros_consensus = acc_kleros.get("consensus_stats", {})
+
+    # Pre-compute Section 6 (Calibration) values
+    cal = data.get("calibration", {})
+    cal_total = cal.get("total_markets", 0)
+    cal_yes_rate = cal.get("yes_rate", 0)
+    cal_brier = cal.get("brier_scores", {})
+    cal_sharpness = cal.get("sharpness", {})
+    cal_curves = cal.get("calibration_curves", {})
+    cal_vol_tier = cal.get("volume_tier_brier", {})
+    cal_period = cal.get("data_period", {})
+    cal_dev_summary = cal.get("deviation_summary", {})
+    cal_dev_range = cal.get("deviation_by_range", {})
+
+    # 편차 핵심 수치 (T-7d 기준)
+    cal_mid_dev_pp = cal_dev_range.get("t7d", {}).get("mid", {}).get("avg_deviation_pp", 0)
+    cal_mid_dev_count = cal_dev_range.get("t7d", {}).get("mid", {}).get("count", 0)
 
     # Pre-compute values used in multiple places
     liquid_ratio = data["polymarket_markets"]["liquid_10k"] / data["polymarket_markets"]["total"] * 100
@@ -1051,6 +1080,72 @@ def build_html(data):
             </div>
         </section>
 
+        {"" if not cal else f'''
+        <!-- 6. 가격 ≠ 확률: 예측 편차 분석 (Calibration) -->
+        <section class="section">
+            <h2><span class="section-number">6</span> {t("가격 ≠ 확률: 예측 편차 분석", "Price ≠ Probability: Prediction Deviation Analysis")}</h2>
+            <p style="color: #888; font-size: 0.9rem; margin-bottom: 20px;">
+                {t(f'Polymarket 2023+ Yes/No 마켓 가격 시계열 기반 | 데이터 기간: {cal_period.get("start", "?")} ~ {cal_period.get("end", "?")}',
+                   f'Based on Polymarket 2023+ Yes/No market price history | Period: {cal_period.get("start", "?")} ~ {cal_period.get("end", "?")}')}
+            </p>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">{cal_total:,}</div>
+                    <div class="stat-label">{t("분석 마켓 수", "Markets Analyzed")}</div>
+                </div>
+                <div class="stat-card" style="border-left: 3px solid {"#ff6b6b" if cal_mid_dev_pp < 0 else "#4ecdc4"};">
+                    <div class="stat-value" style="color: {"#ff6b6b" if cal_mid_dev_pp < 0 else "#4ecdc4"};">{"+" if cal_mid_dev_pp > 0 else ""}{cal_mid_dev_pp}pp</div>
+                    <div class="stat-label">{t('"반반" 구간(35-65%) 평균 편차', '"Toss-up" Range (35-65%) Avg Deviation')}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{cal_brier.get("t7d", 0):.4f}</div>
+                    <div class="stat-label">{t("Brier Score (T-7d)", "Brier Score (T-7d)")}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{cal_yes_rate:.1%}</div>
+                    <div class="stat-label">{t("Yes 해결 비율", "Yes Resolution Rate")}</div>
+                </div>
+            </div>
+
+            <div class="oracle-grid">
+                <div class="chart-container">
+                    <div class="chart-title">{t("Calibration Curve: 예측 확률 vs 실제 결과", "Calibration Curve: Predicted vs Actual")}</div>
+                    <canvas id="calibrationCurveChart" height="250"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">{t("가격 vs 실제 확률 편차 (T-7d)", "Price vs Actual Probability Deviation (T-7d)")}</div>
+                    <canvas id="deviationBarChart" height="250"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container" style="max-width: 600px;">
+                <div class="chart-title">{t("거래량 티어별 Brier Score (T-7d)", "Volume Tier Brier Score (T-7d)")}</div>
+                <canvas id="volumeTierBrierChart" height="200"></canvas>
+            </div>
+
+            <div class="insight-box">
+                <h4>{t("핵심 발견: 가격 ≠ 확률", "Key Finding: Price ≠ Probability")}</h4>
+                <p class="lang-ko">Polymarket의 {cal_total:,}개 마켓에서 <strong>가격이 실제 확률을 체계적으로 왜곡</strong>하고 있습니다.
+                "반반" 구간(35-65%) 마켓의 가격은 실제 발생률 대비 평균 <strong>{abs(cal_mid_dev_pp)}pp {"과대추정" if cal_mid_dev_pp < 0 else "과소추정"}</strong>합니다 ({cal_mid_dev_count}건).
+                즉, 가격 50%인 마켓이 실제로는 ~{50 + cal_mid_dev_pp:.0f}%만 Yes로 해결됩니다.
+                반면 높은 가격 구간(75-95%)은 실제 발생률이 가격보다 높아 <strong>과소추정</strong> 경향이 있습니다.
+                Brier Score {cal_brier.get("t7d", 0):.4f}(T-7d)은 전체적으로 양호하지만,
+                이 수치가 구간별 체계적 편향을 감추고 있습니다.</p>
+                <p class="lang-en">Analysis of {cal_total:,} Polymarket markets reveals <strong>systematic price-probability deviation</strong>.
+                In the "toss-up" range (35-65%), prices <strong>{"overestimate" if cal_mid_dev_pp < 0 else "underestimate"} actual outcomes by {abs(cal_mid_dev_pp)}pp</strong> on average ({cal_mid_dev_count} markets).
+                A market priced at 50% actually resolves Yes only ~{50 + cal_mid_dev_pp:.0f}% of the time.
+                Conversely, high-priced markets (75-95%) tend to <strong>underestimate</strong> actual outcomes.
+                While the overall Brier Score of {cal_brier.get("t7d", 0):.4f} (T-7d) appears decent,
+                it masks these systematic range-specific biases.</p>
+            </div>
+
+            <div class="download-links">
+                <a href="calibration_snapshots.csv" download>{t("Calibration 스냅샷 (CSV)", "Calibration Snapshots (CSV)")}</a>
+            </div>
+        </section>
+        '''}
+
         <footer>
             <p>{t('데이터 수집일', 'Data collected')}: {pd.Timestamp.now().strftime("%Y-%m-%d")}</p>
             <p>{t('Polymarket API &amp; Etherscan API 기반', 'Based on Polymarket API &amp; Etherscan API')}</p>
@@ -1546,6 +1641,176 @@ def build_html(data):
                 plugins: {{ legend: {{ labels: {{ color: '#ccc' }} }} }}
             }}
         }});
+
+        // === Section 6: Calibration Charts ===
+        const calCurves = {json.dumps(cal_curves)};
+        const calBrier = {json.dumps(cal_brier)};
+        const calVolTier = {json.dumps(cal_vol_tier)};
+        const calDevSummary = {json.dumps(cal_dev_summary)};
+
+        // Calibration Curve (multi-line)
+        if (document.getElementById('calibrationCurveChart') && Object.keys(calCurves).length > 0) {{
+            const curveColors = {{
+                't0': 'rgba(255, 107, 107, 0.9)',
+                't1d': 'rgba(255, 165, 0, 0.9)',
+                't7d': 'rgba(100, 200, 255, 0.9)',
+                't30d': 'rgba(144, 238, 144, 0.9)',
+            }};
+            const curveLabels = {{ 't0': 'T-0', 't1d': 'T-1d', 't7d': 'T-7d', 't30d': 'T-30d' }};
+            const datasets = [];
+
+            // Perfect calibration diagonal
+            datasets.push({{
+                label: 'Perfect',
+                data: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                borderDash: [5, 5],
+                borderWidth: 1,
+                pointRadius: 0,
+                fill: false,
+            }});
+
+            for (const [key, curve] of Object.entries(calCurves)) {{
+                const pts = curve.filter(c => c.actual_rate !== null);
+                datasets.push({{
+                    label: curveLabels[key] || key,
+                    data: pts.map(c => ({{ x: c.bin_mid, y: c.actual_rate }})),
+                    borderColor: curveColors[key] || '#ccc',
+                    backgroundColor: curveColors[key] || '#ccc',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    fill: false,
+                    tension: 0.1,
+                }});
+            }}
+
+            new Chart(document.getElementById('calibrationCurveChart'), {{
+                type: 'line',
+                data: {{
+                    labels: ['0%', '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%'],
+                    datasets: datasets,
+                }},
+                options: {{
+                    responsive: true,
+                    scales: {{
+                        x: {{
+                            type: 'linear',
+                            min: 0, max: 1,
+                            title: {{ display: true, text: 'Predicted Probability', color: '#888' }},
+                            grid: {{ color: '#333' }},
+                            ticks: {{ color: '#888', callback: v => (v * 100) + '%' }}
+                        }},
+                        y: {{
+                            min: 0, max: 1,
+                            title: {{ display: true, text: 'Actual Rate', color: '#888' }},
+                            grid: {{ color: '#333' }},
+                            ticks: {{ color: '#888', callback: v => (v * 100) + '%' }}
+                        }}
+                    }},
+                    plugins: {{
+                        legend: {{ labels: {{ color: '#ccc' }} }},
+                        tooltip: {{
+                            callbacks: {{
+                                label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y * 100).toFixed(1) + '%'
+                            }}
+                        }}
+                    }}
+                }}
+            }});
+        }}
+
+        // Price vs Actual Deviation bar chart (T-7d)
+        if (document.getElementById('deviationBarChart') && calDevSummary['t7d']) {{
+            const devData = calDevSummary['t7d'].filter(b => b.deviation !== null && b.count > 0);
+            const devValues = devData.map(b => b.deviation * 100);  // convert to pp
+            const devColors = devValues.map(v => v < 0 ? 'rgba(255, 107, 107, 0.8)' : 'rgba(78, 205, 196, 0.8)');
+
+            new Chart(document.getElementById('deviationBarChart'), {{
+                type: 'bar',
+                data: {{
+                    labels: devData.map(b => b.bin_label),
+                    datasets: [{{
+                        label: getLang() === 'ko' ? '편차 (pp)' : 'Deviation (pp)',
+                        data: devValues,
+                        backgroundColor: devColors,
+                        borderWidth: 0
+                    }}]
+                }},
+                options: {{
+                    responsive: true,
+                    scales: {{
+                        y: {{
+                            grid: {{ color: '#333' }},
+                            ticks: {{ color: '#888', callback: v => (v > 0 ? '+' : '') + v.toFixed(1) + 'pp' }},
+                            title: {{ display: true, text: getLang() === 'ko' ? '편차 (음수 = 과대추정)' : 'Deviation (negative = overestimated)', color: '#888' }}
+                        }},
+                        x: {{
+                            grid: {{ display: false }},
+                            ticks: {{ color: '#888' }},
+                            title: {{ display: true, text: getLang() === 'ko' ? '가격 구간' : 'Price Bin', color: '#888' }}
+                        }}
+                    }},
+                    plugins: {{
+                        legend: {{ display: false }},
+                        tooltip: {{ callbacks: {{
+                            label: ctx => {{
+                                const bin = devData[ctx.dataIndex];
+                                const v = ctx.parsed.y;
+                                const sign = v > 0 ? '+' : '';
+                                return sign + v.toFixed(1) + 'pp (' + bin.count + (getLang() === 'ko' ? '건)' : ' markets)');
+                            }}
+                        }} }},
+                        annotation: {{
+                            annotations: {{
+                                zeroLine: {{
+                                    type: 'line',
+                                    yMin: 0, yMax: 0,
+                                    borderColor: 'rgba(255, 255, 255, 0.4)',
+                                    borderWidth: 1,
+                                    borderDash: [4, 4]
+                                }}
+                            }}
+                        }}
+                    }}
+                }}
+            }});
+        }}
+
+        // Volume Tier Brier Score (bar chart)
+        if (document.getElementById('volumeTierBrierChart') && Object.keys(calVolTier).length > 0) {{
+            const tierOrder = ['1M+', '100K+', '10K+', '< 10K'];
+            const validTiers = tierOrder.filter(t => calVolTier[t] && calVolTier[t]['t7d'] !== undefined);
+
+            new Chart(document.getElementById('volumeTierBrierChart'), {{
+                type: 'bar',
+                data: {{
+                    labels: validTiers.map(t => t + ' ($' + (calVolTier[t]?.count || 0) + ')'),
+                    datasets: [{{
+                        label: 'Brier Score (T-7d)',
+                        data: validTiers.map(t => calVolTier[t]['t7d']),
+                        backgroundColor: [
+                            'rgba(255, 107, 107, 0.7)',
+                            'rgba(255, 165, 0, 0.7)',
+                            'rgba(100, 200, 255, 0.7)',
+                            'rgba(144, 238, 144, 0.7)',
+                        ],
+                        borderWidth: 0
+                    }}]
+                }},
+                options: {{
+                    responsive: true,
+                    scales: {{
+                        y: {{ beginAtZero: true, grid: {{ color: '#333' }}, ticks: {{ color: '#888' }},
+                              title: {{ display: true, text: 'Brier Score (lower = better)', color: '#888' }} }},
+                        x: {{ grid: {{ display: false }}, ticks: {{ color: '#888' }} }}
+                    }},
+                    plugins: {{
+                        legend: {{ display: false }},
+                        tooltip: {{ callbacks: {{ label: ctx => 'Brier: ' + ctx.parsed.y.toFixed(4) }} }}
+                    }}
+                }}
+            }});
+        }}
 
         // Initialize language
         setLang(detectLang());

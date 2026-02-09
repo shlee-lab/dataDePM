@@ -1170,6 +1170,71 @@
             </div>
         </section>
 
+        
+        <!-- 6. 가격 ≠ 확률: 예측 편차 분석 (Calibration) -->
+        <section class="section">
+            <h2><span class="section-number">6</span> <span class="lang-ko">가격 ≠ 확률: 예측 편차 분석</span><span class="lang-en">Price ≠ Probability: Prediction Deviation Analysis</span></h2>
+            <p style="color: #888; font-size: 0.9rem; margin-bottom: 20px;">
+                <span class="lang-ko">Polymarket 2023+ Yes/No 마켓 가격 시계열 기반 | 데이터 기간: 2023-01-05 ~ 2025-01-10</span><span class="lang-en">Based on Polymarket 2023+ Yes/No market price history | Period: 2023-01-05 ~ 2025-01-10</span>
+            </p>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">2,751</div>
+                    <div class="stat-label"><span class="lang-ko">분석 마켓 수</span><span class="lang-en">Markets Analyzed</span></div>
+                </div>
+                <div class="stat-card" style="border-left: 3px solid #ff6b6b;">
+                    <div class="stat-value" style="color: #ff6b6b;">-7.5pp</div>
+                    <div class="stat-label"><span class="lang-ko">"반반" 구간(35-65%) 평균 편차</span><span class="lang-en">"Toss-up" Range (35-65%) Avg Deviation</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">0.0795</div>
+                    <div class="stat-label"><span class="lang-ko">Brier Score (T-7d)</span><span class="lang-en">Brier Score (T-7d)</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">29.9%</div>
+                    <div class="stat-label"><span class="lang-ko">Yes 해결 비율</span><span class="lang-en">Yes Resolution Rate</span></div>
+                </div>
+            </div>
+
+            <div class="oracle-grid">
+                <div class="chart-container">
+                    <div class="chart-title"><span class="lang-ko">Calibration Curve: 예측 확률 vs 실제 결과</span><span class="lang-en">Calibration Curve: Predicted vs Actual</span></div>
+                    <canvas id="calibrationCurveChart" height="250"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title"><span class="lang-ko">가격 vs 실제 확률 편차 (T-7d)</span><span class="lang-en">Price vs Actual Probability Deviation (T-7d)</span></div>
+                    <canvas id="deviationBarChart" height="250"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container" style="max-width: 600px;">
+                <div class="chart-title"><span class="lang-ko">거래량 티어별 Brier Score (T-7d)</span><span class="lang-en">Volume Tier Brier Score (T-7d)</span></div>
+                <canvas id="volumeTierBrierChart" height="200"></canvas>
+            </div>
+
+            <div class="insight-box">
+                <h4><span class="lang-ko">핵심 발견: 가격 ≠ 확률</span><span class="lang-en">Key Finding: Price ≠ Probability</span></h4>
+                <p class="lang-ko">Polymarket의 2,751개 마켓에서 <strong>가격이 실제 확률을 체계적으로 왜곡</strong>하고 있습니다.
+                "반반" 구간(35-65%) 마켓의 가격은 실제 발생률 대비 평균 <strong>7.5pp 과대추정</strong>합니다 (377건).
+                즉, 가격 50%인 마켓이 실제로는 ~42%만 Yes로 해결됩니다.
+                반면 높은 가격 구간(75-95%)은 실제 발생률이 가격보다 높아 <strong>과소추정</strong> 경향이 있습니다.
+                Brier Score 0.0795(T-7d)은 전체적으로 양호하지만,
+                이 수치가 구간별 체계적 편향을 감추고 있습니다.</p>
+                <p class="lang-en">Analysis of 2,751 Polymarket markets reveals <strong>systematic price-probability deviation</strong>.
+                In the "toss-up" range (35-65%), prices <strong>overestimate actual outcomes by 7.5pp</strong> on average (377 markets).
+                A market priced at 50% actually resolves Yes only ~42% of the time.
+                Conversely, high-priced markets (75-95%) tend to <strong>underestimate</strong> actual outcomes.
+                While the overall Brier Score of 0.0795 (T-7d) appears decent,
+                it masks these systematic range-specific biases.</p>
+            </div>
+
+            <div class="download-links">
+                <a href="calibration_snapshots.csv" download><span class="lang-ko">Calibration 스냅샷 (CSV)</span><span class="lang-en">Calibration Snapshots (CSV)</span></a>
+            </div>
+        </section>
+        
+
         <footer>
             <p><span class="lang-ko">데이터 수집일</span><span class="lang-en">Data collected</span>: 2026-02-09</p>
             <p><span class="lang-ko">Polymarket API &amp; Etherscan API 기반</span><span class="lang-en">Based on Polymarket API &amp; Etherscan API</span></p>
@@ -1665,6 +1730,176 @@
                 plugins: { legend: { labels: { color: '#ccc' } } }
             }
         });
+
+        // === Section 6: Calibration Charts ===
+        const calCurves = {"t0": [{"bin_mid": 0.05, "actual_rate": 0.0035, "count": 1422}, {"bin_mid": 0.15, "actual_rate": 0.1102, "count": 127}, {"bin_mid": 0.25, "actual_rate": 0.17, "count": 100}, {"bin_mid": 0.35, "actual_rate": 0.3273, "count": 55}, {"bin_mid": 0.45, "actual_rate": 0.2772, "count": 101}, {"bin_mid": 0.55, "actual_rate": 0.4938, "count": 322}, {"bin_mid": 0.65, "actual_rate": 0.6875, "count": 48}, {"bin_mid": 0.75, "actual_rate": 0.871, "count": 62}, {"bin_mid": 0.85, "actual_rate": 0.8485, "count": 66}, {"bin_mid": 0.95, "actual_rate": 1.0, "count": 432}], "t1d": [{"bin_mid": 0.05, "actual_rate": 0.0093, "count": 1288}, {"bin_mid": 0.15, "actual_rate": 0.0882, "count": 170}, {"bin_mid": 0.25, "actual_rate": 0.2, "count": 110}, {"bin_mid": 0.35, "actual_rate": 0.2941, "count": 68}, {"bin_mid": 0.45, "actual_rate": 0.3077, "count": 117}, {"bin_mid": 0.55, "actual_rate": 0.4962, "count": 264}, {"bin_mid": 0.65, "actual_rate": 0.7794, "count": 68}, {"bin_mid": 0.75, "actual_rate": 0.8406, "count": 69}, {"bin_mid": 0.85, "actual_rate": 0.8852, "count": 61}, {"bin_mid": 0.95, "actual_rate": 0.9939, "count": 327}], "t7d": [{"bin_mid": 0.05, "actual_rate": 0.0086, "count": 932}, {"bin_mid": 0.15, "actual_rate": 0.1237, "count": 186}, {"bin_mid": 0.25, "actual_rate": 0.1942, "count": 103}, {"bin_mid": 0.35, "actual_rate": 0.3448, "count": 58}, {"bin_mid": 0.45, "actual_rate": 0.3922, "count": 102}, {"bin_mid": 0.55, "actual_rate": 0.4286, "count": 168}, {"bin_mid": 0.65, "actual_rate": 0.6122, "count": 49}, {"bin_mid": 0.75, "actual_rate": 0.8462, "count": 52}, {"bin_mid": 0.85, "actual_rate": 0.9038, "count": 52}, {"bin_mid": 0.95, "actual_rate": 0.9892, "count": 185}], "t30d": [{"bin_mid": 0.05, "actual_rate": 0.0117, "count": 596}, {"bin_mid": 0.15, "actual_rate": 0.13, "count": 100}, {"bin_mid": 0.25, "actual_rate": 0.1829, "count": 82}, {"bin_mid": 0.35, "actual_rate": 0.225, "count": 40}, {"bin_mid": 0.45, "actual_rate": 0.3469, "count": 49}, {"bin_mid": 0.55, "actual_rate": 0.4205, "count": 88}, {"bin_mid": 0.65, "actual_rate": 0.6562, "count": 32}, {"bin_mid": 0.75, "actual_rate": 0.7778, "count": 27}, {"bin_mid": 0.85, "actual_rate": 0.9091, "count": 33}, {"bin_mid": 0.95, "actual_rate": 0.972, "count": 107}]};
+        const calBrier = {"t0": 0.0635, "t1d": 0.0709, "t7d": 0.0795, "t30d": 0.0776};
+        const calVolTier = {"1M+": {"count": 194, "t0": 0.0064, "t1d": 0.0179, "t7d": 0.0381, "t30d": 0.0611}, "100K+": {"count": 382, "t0": 0.023, "t1d": 0.0346, "t7d": 0.067, "t30d": 0.0776}, "10K+": {"count": 975, "t0": 0.0443, "t1d": 0.0585, "t7d": 0.0743, "t30d": 0.0727}, "< 10K": {"count": 1200, "t0": 0.1017, "t1d": 0.1052, "t7d": 0.1051, "t30d": 0.0952}};
+        const calDevSummary = {"t0": [{"bin_label": "5%", "bin_mid": 0.05, "actual_rate": 0.0035, "deviation": -0.0465, "count": 1422}, {"bin_label": "15%", "bin_mid": 0.15, "actual_rate": 0.1102, "deviation": -0.0398, "count": 127}, {"bin_label": "25%", "bin_mid": 0.25, "actual_rate": 0.17, "deviation": -0.08, "count": 100}, {"bin_label": "35%", "bin_mid": 0.35, "actual_rate": 0.3273, "deviation": -0.0227, "count": 55}, {"bin_label": "45%", "bin_mid": 0.45, "actual_rate": 0.2772, "deviation": -0.1728, "count": 101}, {"bin_label": "55%", "bin_mid": 0.55, "actual_rate": 0.4938, "deviation": -0.0562, "count": 322}, {"bin_label": "65%", "bin_mid": 0.65, "actual_rate": 0.6875, "deviation": 0.0375, "count": 48}, {"bin_label": "75%", "bin_mid": 0.75, "actual_rate": 0.871, "deviation": 0.121, "count": 62}, {"bin_label": "85%", "bin_mid": 0.85, "actual_rate": 0.8485, "deviation": -0.0015, "count": 66}, {"bin_label": "95%", "bin_mid": 0.95, "actual_rate": 1.0, "deviation": 0.05, "count": 432}], "t1d": [{"bin_label": "5%", "bin_mid": 0.05, "actual_rate": 0.0093, "deviation": -0.0407, "count": 1288}, {"bin_label": "15%", "bin_mid": 0.15, "actual_rate": 0.0882, "deviation": -0.0618, "count": 170}, {"bin_label": "25%", "bin_mid": 0.25, "actual_rate": 0.2, "deviation": -0.05, "count": 110}, {"bin_label": "35%", "bin_mid": 0.35, "actual_rate": 0.2941, "deviation": -0.0559, "count": 68}, {"bin_label": "45%", "bin_mid": 0.45, "actual_rate": 0.3077, "deviation": -0.1423, "count": 117}, {"bin_label": "55%", "bin_mid": 0.55, "actual_rate": 0.4962, "deviation": -0.0538, "count": 264}, {"bin_label": "65%", "bin_mid": 0.65, "actual_rate": 0.7794, "deviation": 0.1294, "count": 68}, {"bin_label": "75%", "bin_mid": 0.75, "actual_rate": 0.8406, "deviation": 0.0906, "count": 69}, {"bin_label": "85%", "bin_mid": 0.85, "actual_rate": 0.8852, "deviation": 0.0352, "count": 61}, {"bin_label": "95%", "bin_mid": 0.95, "actual_rate": 0.9939, "deviation": 0.0439, "count": 327}], "t7d": [{"bin_label": "5%", "bin_mid": 0.05, "actual_rate": 0.0086, "deviation": -0.0414, "count": 932}, {"bin_label": "15%", "bin_mid": 0.15, "actual_rate": 0.1237, "deviation": -0.0263, "count": 186}, {"bin_label": "25%", "bin_mid": 0.25, "actual_rate": 0.1942, "deviation": -0.0558, "count": 103}, {"bin_label": "35%", "bin_mid": 0.35, "actual_rate": 0.3448, "deviation": -0.0052, "count": 58}, {"bin_label": "45%", "bin_mid": 0.45, "actual_rate": 0.3922, "deviation": -0.0578, "count": 102}, {"bin_label": "55%", "bin_mid": 0.55, "actual_rate": 0.4286, "deviation": -0.1214, "count": 168}, {"bin_label": "65%", "bin_mid": 0.65, "actual_rate": 0.6122, "deviation": -0.0378, "count": 49}, {"bin_label": "75%", "bin_mid": 0.75, "actual_rate": 0.8462, "deviation": 0.0962, "count": 52}, {"bin_label": "85%", "bin_mid": 0.85, "actual_rate": 0.9038, "deviation": 0.0538, "count": 52}, {"bin_label": "95%", "bin_mid": 0.95, "actual_rate": 0.9892, "deviation": 0.0392, "count": 185}], "t30d": [{"bin_label": "5%", "bin_mid": 0.05, "actual_rate": 0.0117, "deviation": -0.0383, "count": 596}, {"bin_label": "15%", "bin_mid": 0.15, "actual_rate": 0.13, "deviation": -0.02, "count": 100}, {"bin_label": "25%", "bin_mid": 0.25, "actual_rate": 0.1829, "deviation": -0.0671, "count": 82}, {"bin_label": "35%", "bin_mid": 0.35, "actual_rate": 0.225, "deviation": -0.125, "count": 40}, {"bin_label": "45%", "bin_mid": 0.45, "actual_rate": 0.3469, "deviation": -0.1031, "count": 49}, {"bin_label": "55%", "bin_mid": 0.55, "actual_rate": 0.4205, "deviation": -0.1295, "count": 88}, {"bin_label": "65%", "bin_mid": 0.65, "actual_rate": 0.6562, "deviation": 0.0062, "count": 32}, {"bin_label": "75%", "bin_mid": 0.75, "actual_rate": 0.7778, "deviation": 0.0278, "count": 27}, {"bin_label": "85%", "bin_mid": 0.85, "actual_rate": 0.9091, "deviation": 0.0591, "count": 33}, {"bin_label": "95%", "bin_mid": 0.95, "actual_rate": 0.972, "deviation": 0.022, "count": 107}]};
+
+        // Calibration Curve (multi-line)
+        if (document.getElementById('calibrationCurveChart') && Object.keys(calCurves).length > 0) {
+            const curveColors = {
+                't0': 'rgba(255, 107, 107, 0.9)',
+                't1d': 'rgba(255, 165, 0, 0.9)',
+                't7d': 'rgba(100, 200, 255, 0.9)',
+                't30d': 'rgba(144, 238, 144, 0.9)',
+            };
+            const curveLabels = { 't0': 'T-0', 't1d': 'T-1d', 't7d': 'T-7d', 't30d': 'T-30d' };
+            const datasets = [];
+
+            // Perfect calibration diagonal
+            datasets.push({
+                label: 'Perfect',
+                data: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                borderDash: [5, 5],
+                borderWidth: 1,
+                pointRadius: 0,
+                fill: false,
+            });
+
+            for (const [key, curve] of Object.entries(calCurves)) {
+                const pts = curve.filter(c => c.actual_rate !== null);
+                datasets.push({
+                    label: curveLabels[key] || key,
+                    data: pts.map(c => ({ x: c.bin_mid, y: c.actual_rate })),
+                    borderColor: curveColors[key] || '#ccc',
+                    backgroundColor: curveColors[key] || '#ccc',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    fill: false,
+                    tension: 0.1,
+                });
+            }
+
+            new Chart(document.getElementById('calibrationCurveChart'), {
+                type: 'line',
+                data: {
+                    labels: ['0%', '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%'],
+                    datasets: datasets,
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            min: 0, max: 1,
+                            title: { display: true, text: 'Predicted Probability', color: '#888' },
+                            grid: { color: '#333' },
+                            ticks: { color: '#888', callback: v => (v * 100) + '%' }
+                        },
+                        y: {
+                            min: 0, max: 1,
+                            title: { display: true, text: 'Actual Rate', color: '#888' },
+                            grid: { color: '#333' },
+                            ticks: { color: '#888', callback: v => (v * 100) + '%' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#ccc' } },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y * 100).toFixed(1) + '%'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Price vs Actual Deviation bar chart (T-7d)
+        if (document.getElementById('deviationBarChart') && calDevSummary['t7d']) {
+            const devData = calDevSummary['t7d'].filter(b => b.deviation !== null && b.count > 0);
+            const devValues = devData.map(b => b.deviation * 100);  // convert to pp
+            const devColors = devValues.map(v => v < 0 ? 'rgba(255, 107, 107, 0.8)' : 'rgba(78, 205, 196, 0.8)');
+
+            new Chart(document.getElementById('deviationBarChart'), {
+                type: 'bar',
+                data: {
+                    labels: devData.map(b => b.bin_label),
+                    datasets: [{
+                        label: getLang() === 'ko' ? '편차 (pp)' : 'Deviation (pp)',
+                        data: devValues,
+                        backgroundColor: devColors,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            grid: { color: '#333' },
+                            ticks: { color: '#888', callback: v => (v > 0 ? '+' : '') + v.toFixed(1) + 'pp' },
+                            title: { display: true, text: getLang() === 'ko' ? '편차 (음수 = 과대추정)' : 'Deviation (negative = overestimated)', color: '#888' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#888' },
+                            title: { display: true, text: getLang() === 'ko' ? '가격 구간' : 'Price Bin', color: '#888' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: {
+                            label: ctx => {
+                                const bin = devData[ctx.dataIndex];
+                                const v = ctx.parsed.y;
+                                const sign = v > 0 ? '+' : '';
+                                return sign + v.toFixed(1) + 'pp (' + bin.count + (getLang() === 'ko' ? '건)' : ' markets)');
+                            }
+                        } },
+                        annotation: {
+                            annotations: {
+                                zeroLine: {
+                                    type: 'line',
+                                    yMin: 0, yMax: 0,
+                                    borderColor: 'rgba(255, 255, 255, 0.4)',
+                                    borderWidth: 1,
+                                    borderDash: [4, 4]
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Volume Tier Brier Score (bar chart)
+        if (document.getElementById('volumeTierBrierChart') && Object.keys(calVolTier).length > 0) {
+            const tierOrder = ['1M+', '100K+', '10K+', '< 10K'];
+            const validTiers = tierOrder.filter(t => calVolTier[t] && calVolTier[t]['t7d'] !== undefined);
+
+            new Chart(document.getElementById('volumeTierBrierChart'), {
+                type: 'bar',
+                data: {
+                    labels: validTiers.map(t => t + ' ($' + (calVolTier[t]?.count || 0) + ')'),
+                    datasets: [{
+                        label: 'Brier Score (T-7d)',
+                        data: validTiers.map(t => calVolTier[t]['t7d']),
+                        backgroundColor: [
+                            'rgba(255, 107, 107, 0.7)',
+                            'rgba(255, 165, 0, 0.7)',
+                            'rgba(100, 200, 255, 0.7)',
+                            'rgba(144, 238, 144, 0.7)',
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#888' },
+                              title: { display: true, text: 'Brier Score (lower = better)', color: '#888' } },
+                        x: { grid: { display: false }, ticks: { color: '#888' } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: ctx => 'Brier: ' + ctx.parsed.y.toFixed(4) } }
+                    }
+                }
+            });
+        }
 
         // Initialize language
         setLang(detectLang());
