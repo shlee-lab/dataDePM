@@ -9,6 +9,7 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 from collectors.concentration_metrics import calculate_all_metrics, interpret_hhi, interpret_gini
+from analysis.accuracy import analyze_all
 
 DATA_DIR = Path("data")
 SITE_DIR = Path("site")
@@ -188,6 +189,24 @@ def load_data():
 
     data["contracts"] = CONTRACTS
 
+    # Section 5: Oracle accuracy analysis
+    print("  오라클 정확성 분석 중...")
+    accuracy_data = analyze_all()
+    data["accuracy"] = accuracy_data
+
+    # CSV exports for decoded data
+    uma_req_path = DATA_DIR / "uma_decoded_requests.parquet"
+    if uma_req_path.exists():
+        uma_req_df = pd.read_parquet(uma_req_path)
+        uma_req_df.to_csv(SITE_DIR / "uma_decoded_requests.csv", index=False)
+        print(f"  CSV 저장: site/uma_decoded_requests.csv ({len(uma_req_df)} rows)")
+
+    kleros_disp_path = DATA_DIR / "kleros_decoded_disputes.parquet"
+    if kleros_disp_path.exists():
+        kleros_disp_df = pd.read_parquet(kleros_disp_path)
+        kleros_disp_df.to_csv(SITE_DIR / "kleros_decoded_disputes.csv", index=False)
+        print(f"  CSV 저장: site/kleros_decoded_disputes.csv ({len(kleros_disp_df)} rows)")
+
     return data
 
 
@@ -223,6 +242,24 @@ def build_html(data):
     kc_shifts = kc.get("token_shifts", 0)
     kc_draws_per_dispute = kc_draws / max(kc_disputes, 1)
     kc_votes_per_dispute = kc_votes / max(kc_disputes, 1)
+
+    # Pre-compute Section 5 values
+    acc = data.get("accuracy", {})
+    acc_uma = acc.get("uma_disputes", {})
+    acc_uma_overall = acc_uma.get("overall", {})
+    acc_uma_yesno = acc_uma.get("yesno", {})
+    acc_kleros = acc.get("kleros_disputes", {})
+    acc_pm = acc.get("polymarket_resolved", {})
+
+    # UMA YES_OR_NO_QUERY resolution distribution for chart
+    yesno_res_dist = acc_uma_yesno.get("resolution_distribution", {})
+    yesno_details = acc_uma_yesno.get("details", [])
+
+    # Kleros ruling distribution for chart
+    kleros_ruling_dist = acc_kleros.get("ruling_distribution", {})
+    kleros_dispute_details = acc_kleros.get("dispute_details", [])
+    kleros_voter_stats = acc_kleros.get("voter_stats", {})
+    kleros_consensus = acc_kleros.get("consensus_stats", {})
 
     # Pre-compute values used in multiple places
     liquid_ratio = data["polymarket_markets"]["liquid_10k"] / data["polymarket_markets"]["total"] * 100
@@ -817,6 +854,115 @@ def build_html(data):
             </div>
         </section>
 
+        <!-- 5. 오라클 정확성 검증 -->
+        <section class="section">
+            <h2><span class="section-number">5</span> {t('오라클 정확성 검증', 'Oracle Accuracy Verification')}</h2>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">{acc_pm.get("total_resolved", 0):,}</div>
+                    <div class="stat-label">{t('종료 마켓 수', 'Resolved Markets')}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{acc_uma_yesno.get("total", 0)}</div>
+                    <div class="stat-label">{t('UMA 예측시장 분쟁', 'UMA Prediction Disputes')}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{acc_kleros.get("total_disputes", 0)}</div>
+                    <div class="stat-label">{t('Kleros 분쟁', 'Kleros Disputes')}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value warning">{acc_uma_yesno.get("unresolvable_count", 0)}</div>
+                    <div class="stat-label">{t('UMA 해결불가 건', 'UMA Unresolvable')}</div>
+                </div>
+            </div>
+
+            <h3>{t('UMA 분쟁 해결 분석', 'UMA Dispute Resolution Analysis')}</h3>
+
+            <div class="oracle-grid">
+                <div class="chart-container">
+                    <div class="chart-title">{t('UMA 식별자 유형별 분포', 'UMA Request Categories')}</div>
+                    <canvas id="umaIdentCatChart" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">{t('YES_OR_NO_QUERY 해결 결과', 'YES_OR_NO_QUERY Resolution')}</div>
+                    <canvas id="umaYesNoChart" height="200"></canvas>
+                </div>
+            </div>
+
+            <div class="oracle-grid">
+                <div class="chart-container">
+                    <div class="chart-title">{t('YES_OR_NO_QUERY 투표 합의도', 'YES_OR_NO_QUERY Vote Consensus')}</div>
+                    <canvas id="umaConsensusChart" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">{t('UMA 투표 권한 집중도 (상위 10명)', 'UMA Voting Power Concentration (Top 10)')}</div>
+                    <canvas id="umaVoterPowerChart" height="200"></canvas>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h4>{t('UMA 분쟁 해결 인사이트', 'UMA Dispute Resolution Insights')}</h4>
+                <p class="lang-ko">UMA DVM에 제출된 {acc_uma_overall.get("total_requests", 0)}건의 가격 요청 중 YES_OR_NO_QUERY(예측시장 분쟁)는 {acc_uma_yesno.get("total", 0)}건입니다.
+                이 중 Yes {acc_uma_yesno.get("yes_count", 0)}건, No {acc_uma_yesno.get("no_count", 0)}건, 해결불가 {acc_uma_yesno.get("unresolvable_count", 0)}건, 불확정 {acc_uma_yesno.get("indeterminate_count", 0)}건으로 해결되었습니다.
+                평균 합의율 {acc_uma_yesno.get("avg_consensus", 0):.1%}, 만장일치 비율 {acc_uma_yesno.get("unanimous_ratio", 0)}%로 높은 합의 수준을 보이지만,
+                상위 5명이 전체 투표 토큰의 {acc_uma_overall.get("top5_voter_token_share", 0)}%를 차지하여 소수에 의한 결정 구조입니다.</p>
+                <p class="lang-en">Of {acc_uma_overall.get("total_requests", 0)} price requests submitted to UMA DVM, {acc_uma_yesno.get("total", 0)} were YES_OR_NO_QUERY (prediction market disputes).
+                Results: Yes {acc_uma_yesno.get("yes_count", 0)}, No {acc_uma_yesno.get("no_count", 0)}, Unresolvable {acc_uma_yesno.get("unresolvable_count", 0)}, Indeterminate {acc_uma_yesno.get("indeterminate_count", 0)}.
+                Average consensus {acc_uma_yesno.get("avg_consensus", 0):.1%} with {acc_uma_yesno.get("unanimous_ratio", 0)}% unanimous, showing high agreement.
+                However, top 5 voters control {acc_uma_overall.get("top5_voter_token_share", 0)}% of voting tokens — decisions are made by a few.</p>
+            </div>
+
+            <h3 style="margin-top: 50px;">{t('Kleros Court 분쟁 해결 분석', 'Kleros Court Dispute Resolution Analysis')}</h3>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">{acc_kleros.get("resolved_count", 0)}</div>
+                    <div class="stat-label">{t('판결 완료', 'Resolved')}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value warning">{acc_kleros.get("unresolved_count", 0)}</div>
+                    <div class="stat-label">{t('미해결', 'Unresolved')}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{kleros_consensus.get("avg_consensus", 0):.1%}</div>
+                    <div class="stat-label">{t('평균 합의율', 'Avg Consensus')}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value danger">{kleros_voter_stats.get("repeat_voter_ratio", 0)}%</div>
+                    <div class="stat-label">{t('배심원 반복 참여율', 'Juror Repeat Rate')}</div>
+                </div>
+            </div>
+
+            <div class="oracle-grid">
+                <div class="chart-container">
+                    <div class="chart-title">{t('Kleros Ruling 분포', 'Kleros Ruling Distribution')}</div>
+                    <canvas id="klerosRulingChart" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">{t('Kleros 배심원 참여 빈도 (상위 10명)', 'Kleros Juror Participation (Top 10)')}</div>
+                    <canvas id="klerosJurorChart" height="200"></canvas>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h4>{t('Kleros Court 인사이트', 'Kleros Court Insights')}</h4>
+                <p class="lang-ko">Kleros v2 Court에서 {acc_kleros.get("total_disputes", 0)}건의 분쟁 중 {acc_kleros.get("resolved_count", 0)}건({acc_kleros.get("resolution_rate", 0)}%)이 판결 완료되었습니다.
+                Ruling 2가 다수({kleros_ruling_dist.get("Ruling 2", 0)}건)이며, 평균 합의율은 {kleros_consensus.get("avg_consensus", 0):.1%}입니다.
+                전체 {kleros_voter_stats.get("total_unique_voters", 0)}명의 고유 투표자 중 {kleros_voter_stats.get("repeat_voters", 0)}명({kleros_voter_stats.get("repeat_voter_ratio", 0)}%)이 복수 분쟁에 참여하여
+                소수의 전문 배심원이 분쟁 해결을 주도하고 있습니다.</p>
+                <p class="lang-en">In Kleros v2 Court, {acc_kleros.get("resolved_count", 0)} of {acc_kleros.get("total_disputes", 0)} disputes ({acc_kleros.get("resolution_rate", 0)}%) have been resolved.
+                Ruling 2 dominates ({kleros_ruling_dist.get("Ruling 2", 0)} cases), with average consensus at {kleros_consensus.get("avg_consensus", 0):.1%}.
+                Of {kleros_voter_stats.get("total_unique_voters", 0)} unique voters, {kleros_voter_stats.get("repeat_voters", 0)} ({kleros_voter_stats.get("repeat_voter_ratio", 0)}%) participated in multiple disputes,
+                showing that a small group of professional jurors drives dispute resolution.</p>
+            </div>
+
+            <div class="download-links">
+                <a href="uma_decoded_requests.csv" download>📥 {t('UMA 디코딩 요청', 'UMA Decoded Requests')}</a>
+                <a href="kleros_decoded_disputes.csv" download>📥 {t('Kleros 디코딩 분쟁', 'Kleros Decoded Disputes')}</a>
+            </div>
+        </section>
+
         <footer>
             <p>{t('데이터 수집일', 'Data collected')}: {pd.Timestamp.now().strftime("%Y-%m-%d")}</p>
             <p>{t('Polymarket API &amp; Etherscan API 기반', 'Based on Polymarket API &amp; Etherscan API')}</p>
@@ -840,7 +986,11 @@ def build_html(data):
                 oracleSubtitle: '값이 높을수록 집중도 높음 (나카모토 계수 제외)',
                 events: '이벤트 수',
                 klerosFunnel: ['DisputeCreation', 'Draw (배심원)', 'VoteCast (투표)', 'Ruling (판결)', 'Appeal (항소)'],
-                title: '예측시장 구조적 리스크 분석'
+                title: '예측시장 구조적 리스크 분석',
+                tokenShare: '토큰 점유율 %',
+                consensus: '합의율 %',
+                votes: '투표 수',
+                disputes: '분쟁 수'
             }},
             en: {{
                 volumeShare: 'Volume Share (%)',
@@ -853,7 +1003,11 @@ def build_html(data):
                 oracleSubtitle: 'Higher = more concentrated (except Nakamoto)',
                 events: 'Events',
                 klerosFunnel: ['DisputeCreation', 'Draw (Juror)', 'VoteCast (Vote)', 'Ruling', 'Appeal'],
-                title: 'Prediction Market Structural Risk Analysis'
+                title: 'Prediction Market Structural Risk Analysis',
+                tokenShare: 'Token Share %',
+                consensus: 'Consensus %',
+                votes: 'Votes',
+                disputes: 'Disputes'
             }}
         }};
 
@@ -882,6 +1036,21 @@ def build_html(data):
             chartKlerosFunnel.data.labels = tr.klerosFunnel;
             chartKlerosFunnel.data.datasets[0].label = tr.events;
             chartKlerosFunnel.update();
+
+            // Section 5 charts
+            if (typeof chartUmaConsensus !== 'undefined') {{
+                chartUmaConsensus.data.datasets[0].label = tr.consensus;
+                chartUmaConsensus.update();
+            }}
+            if (typeof chartUmaVoterPower !== 'undefined') {{
+                chartUmaVoterPower.data.datasets[0].label = tr.tokenShare;
+                chartUmaVoterPower.update();
+            }}
+            if (typeof chartKlerosJuror !== 'undefined') {{
+                chartKlerosJuror.data.datasets[0].label = tr.votes;
+                chartKlerosJuror.data.datasets[1].label = tr.disputes;
+                chartKlerosJuror.update();
+            }}
 
             document.title = tr.title;
             document.documentElement.lang = lang;
@@ -1130,6 +1299,163 @@ def build_html(data):
                     y: {{ grid: {{ display: false }}, ticks: {{ color: '#ccc' }} }}
                 }},
                 plugins: {{ legend: {{ display: false }} }}
+            }}
+        }});
+
+        // === Section 5: Oracle Accuracy Charts ===
+
+        // UMA Identifier Category Chart
+        const umaIdentCatData = {json.dumps(acc_uma_overall.get("identifier_categories", {}))};
+        const chartUmaIdentCat = new Chart(document.getElementById('umaIdentCatChart'), {{
+            type: 'doughnut',
+            data: {{
+                labels: Object.keys(umaIdentCatData),
+                datasets: [{{
+                    data: Object.values(umaIdentCatData),
+                    backgroundColor: [
+                        'rgba(255, 107, 107, 0.8)',
+                        'rgba(255, 165, 0, 0.8)',
+                        'rgba(100, 200, 255, 0.8)',
+                        'rgba(144, 238, 144, 0.8)',
+                    ],
+                    borderWidth: 0
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                plugins: {{
+                    legend: {{ position: 'right', labels: {{ color: '#ccc', font: {{ size: 11 }} }} }}
+                }}
+            }}
+        }});
+
+        // UMA YES_OR_NO_QUERY Resolution Donut
+        const yesnoResData = {json.dumps(yesno_res_dist)};
+        const yesnoColors = {{
+            'Yes': 'rgba(144, 238, 144, 0.8)',
+            'No': 'rgba(255, 107, 107, 0.8)',
+            'Indeterminate': 'rgba(255, 165, 0, 0.8)',
+            'Unresolvable': 'rgba(150, 150, 150, 0.8)',
+        }};
+        const chartUmaYesNo = new Chart(document.getElementById('umaYesNoChart'), {{
+            type: 'doughnut',
+            data: {{
+                labels: Object.keys(yesnoResData),
+                datasets: [{{
+                    data: Object.values(yesnoResData),
+                    backgroundColor: Object.keys(yesnoResData).map(k => yesnoColors[k] || 'rgba(186, 147, 255, 0.8)'),
+                    borderWidth: 0
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                plugins: {{
+                    legend: {{ position: 'right', labels: {{ color: '#ccc', font: {{ size: 11 }} }} }}
+                }}
+            }}
+        }});
+
+        // UMA YES_OR_NO_QUERY Consensus Bar Chart
+        const yesnoDetails = {json.dumps(yesno_details)};
+        const chartUmaConsensus = new Chart(document.getElementById('umaConsensusChart'), {{
+            type: 'bar',
+            data: {{
+                labels: yesnoDetails.map(d => 'R' + d.round_id),
+                datasets: [{{
+                    label: 'Consensus %',
+                    data: yesnoDetails.map(d => Math.round(d.consensus * 100)),
+                    backgroundColor: yesnoDetails.map(d => {{
+                        if (d.resolution === 'Yes') return 'rgba(144, 238, 144, 0.8)';
+                        if (d.resolution === 'No') return 'rgba(255, 107, 107, 0.8)';
+                        if (d.resolution === 'Unresolvable') return 'rgba(150, 150, 150, 0.8)';
+                        return 'rgba(255, 165, 0, 0.8)';
+                    }}),
+                    borderWidth: 0
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                scales: {{
+                    y: {{ beginAtZero: true, max: 100, grid: {{ color: '#333' }}, ticks: {{ color: '#888', callback: v => v + '%' }} }},
+                    x: {{ grid: {{ display: false }}, ticks: {{ color: '#888', font: {{ size: 9 }}, maxRotation: 90 }} }}
+                }},
+                plugins: {{ legend: {{ display: false }} }}
+            }}
+        }});
+
+        // UMA Voter Power Concentration
+        const umaTopVoters = {json.dumps(acc_uma_overall.get("top_voters", []))};
+        const chartUmaVoterPower = new Chart(document.getElementById('umaVoterPowerChart'), {{
+            type: 'bar',
+            data: {{
+                labels: umaTopVoters.map(v => v.address.slice(0, 8) + '...'),
+                datasets: [{{
+                    label: 'Token Share %',
+                    data: umaTopVoters.map(v => v.token_share),
+                    backgroundColor: umaTopVoters.map((v, i) => i < 5 ? 'rgba(255, 107, 107, 0.8)' : 'rgba(255, 165, 0, 0.8)'),
+                    borderWidth: 0
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                scales: {{
+                    y: {{ beginAtZero: true, grid: {{ color: '#333' }}, ticks: {{ color: '#888', callback: v => v + '%' }} }},
+                    x: {{ grid: {{ display: false }}, ticks: {{ color: '#888', font: {{ size: 9 }}, maxRotation: 45 }} }}
+                }},
+                plugins: {{ legend: {{ display: false }} }}
+            }}
+        }});
+
+        // Kleros Ruling Distribution Donut
+        const klerosRulingData = {json.dumps(kleros_ruling_dist)};
+        const chartKlerosRuling = new Chart(document.getElementById('klerosRulingChart'), {{
+            type: 'doughnut',
+            data: {{
+                labels: Object.keys(klerosRulingData),
+                datasets: [{{
+                    data: Object.values(klerosRulingData),
+                    backgroundColor: [
+                        'rgba(255, 107, 107, 0.8)',
+                        'rgba(100, 200, 255, 0.8)',
+                        'rgba(255, 165, 0, 0.8)',
+                        'rgba(144, 238, 144, 0.8)',
+                    ],
+                    borderWidth: 0
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                plugins: {{
+                    legend: {{ position: 'right', labels: {{ color: '#ccc', font: {{ size: 11 }} }} }}
+                }}
+            }}
+        }});
+
+        // Kleros Juror Participation
+        const klerosTopJurors = {json.dumps(kleros_voter_stats.get("top_jurors", []))};
+        const chartKlerosJuror = new Chart(document.getElementById('klerosJurorChart'), {{
+            type: 'bar',
+            data: {{
+                labels: klerosTopJurors.map(j => j.address.slice(0, 8) + '...'),
+                datasets: [{{
+                    label: 'Votes',
+                    data: klerosTopJurors.map(j => j.total_votes),
+                    backgroundColor: 'rgba(100, 200, 255, 0.7)',
+                    borderWidth: 0
+                }}, {{
+                    label: 'Disputes',
+                    data: klerosTopJurors.map(j => j.disputes_participated),
+                    backgroundColor: 'rgba(255, 165, 0, 0.7)',
+                    borderWidth: 0
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                scales: {{
+                    y: {{ beginAtZero: true, grid: {{ color: '#333' }}, ticks: {{ color: '#888' }} }},
+                    x: {{ grid: {{ display: false }}, ticks: {{ color: '#888', font: {{ size: 9 }}, maxRotation: 45 }} }}
+                }},
+                plugins: {{ legend: {{ labels: {{ color: '#ccc' }} }} }}
             }}
         }});
 

@@ -97,6 +97,48 @@ def fetch_market_trades(clob_token_id: str, limit: int = 500) -> list:
         return []
 
 
+def parse_resolution(outcome_prices_str, outcomes_str) -> str:
+    """outcomePrices에서 해결 결과 추론
+
+    승자 가격 >= 0.95면 해당 outcome이 승리한 것으로 판단.
+    """
+    if not outcome_prices_str or not outcomes_str:
+        return "Unknown"
+
+    try:
+        # outcomePrices는 JSON 문자열: "[\"1\", \"0\"]" 또는 "1, 0" 형태
+        prices_str = outcome_prices_str.strip()
+        outcomes_parsed = outcomes_str.strip()
+
+        # JSON 배열 형식
+        if prices_str.startswith("["):
+            import json
+            prices = [float(p) for p in json.loads(prices_str)]
+        else:
+            prices = [float(p.strip()) for p in prices_str.split(",")]
+
+        if outcomes_parsed.startswith("["):
+            import json
+            outcomes = json.loads(outcomes_parsed)
+        else:
+            outcomes = [o.strip().strip('"') for o in outcomes_parsed.split(",")]
+
+        # 승자 찾기
+        for i, price in enumerate(prices):
+            if price >= 0.95:
+                if i < len(outcomes):
+                    return outcomes[i]
+                return f"Outcome_{i}"
+
+        # 모든 가격이 0에 가까우면 (취소/무효)
+        if all(p < 0.05 for p in prices):
+            return "Cancelled"
+
+        return "Unknown"
+    except Exception:
+        return "Unknown"
+
+
 def collect_markets(closed: bool = False) -> pd.DataFrame:
     """마켓 데이터 수집 및 정리"""
 
@@ -120,6 +162,38 @@ def collect_markets(closed: bool = False) -> pd.DataFrame:
             "closed": m.get("closed"),
             "outcomes": m.get("outcomes"),
             "outcome_prices": m.get("outcomePrices"),
+        })
+
+    df = pd.DataFrame(records)
+    return df
+
+
+def collect_resolved_markets(max_markets: int = 10000) -> pd.DataFrame:
+    """종료된 마켓 데이터 수집 및 해결 결과 파싱"""
+
+    markets = fetch_all_markets(closed=True, max_markets=max_markets)
+
+    records = []
+    for m in markets:
+        outcome_prices = m.get("outcomePrices")
+        outcomes = m.get("outcomes")
+        resolution = parse_resolution(outcome_prices, outcomes)
+
+        records.append({
+            "id": m.get("id"),
+            "question": m.get("question"),
+            "slug": m.get("slug"),
+            "category": m.get("category"),
+            "end_date": m.get("endDate"),
+            "created_at": m.get("createdAt"),
+            "closed_time": m.get("closedTime") or m.get("endDate"),
+            "volume": float(m.get("volume", 0) or 0),
+            "liquidity": float(m.get("liquidity", 0) or 0),
+            "outcomes": outcomes,
+            "outcome_prices": outcome_prices,
+            "resolution": resolution,
+            "condition_id": m.get("conditionId"),
+            "resolution_source": m.get("resolutionSource"),
         })
 
     df = pd.DataFrame(records)
@@ -196,7 +270,7 @@ def main():
     print(f"시간: {datetime.now().isoformat()}")
 
     # 진행중인 마켓만 수집 (closed=False)
-    print("\n[1/2] 진행중인 마켓 데이터 수집 중 (최대 5000개)...")
+    print("\n[1/3] 진행중인 마켓 데이터 수집 중 (최대 5000개)...")
     markets_df = collect_markets(closed=False)
     save_data(markets_df, "polymarket_markets")
 
@@ -217,7 +291,19 @@ def main():
     stats_df["collected_at"] = datetime.now().isoformat()
     save_data(stats_df, "polymarket_liquidity_stats")
 
-    print("\n[2/2] 거래 내역 샘플 수집 중...")
+    print("\n[2/3] 종료된 마켓 데이터 수집 중 (최대 10000개)...")
+    resolved_df = collect_resolved_markets(max_markets=10000)
+    save_data(resolved_df, "polymarket_resolved")
+
+    # 해결 결과 통계 출력
+    if not resolved_df.empty:
+        print(f"\n--- 종료 마켓 해결 통계 ---")
+        print(f"  종료 마켓 수: {len(resolved_df)}")
+        res_counts = resolved_df["resolution"].value_counts()
+        for res, count in res_counts.items():
+            print(f"  {res}: {count} ({count/len(resolved_df)*100:.1f}%)")
+
+    print("\n[3/3] 거래 내역 샘플 수집 중...")
     trades_df = collect_trades_sample(markets_df, sample_size=30)
     if not trades_df.empty:
         save_data(trades_df, "polymarket_trades")

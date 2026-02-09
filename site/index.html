@@ -828,8 +828,117 @@
             </div>
         </section>
 
+        <!-- 5. 오라클 정확성 검증 -->
+        <section class="section">
+            <h2><span class="section-number">5</span> <span class="lang-ko">오라클 정확성 검증</span><span class="lang-en">Oracle Accuracy Verification</span></h2>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">10,000</div>
+                    <div class="stat-label"><span class="lang-ko">종료 마켓 수</span><span class="lang-en">Resolved Markets</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">25</div>
+                    <div class="stat-label"><span class="lang-ko">UMA 예측시장 분쟁</span><span class="lang-en">UMA Prediction Disputes</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">118</div>
+                    <div class="stat-label"><span class="lang-ko">Kleros 분쟁</span><span class="lang-en">Kleros Disputes</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value warning">10</div>
+                    <div class="stat-label"><span class="lang-ko">UMA 해결불가 건</span><span class="lang-en">UMA Unresolvable</span></div>
+                </div>
+            </div>
+
+            <h3><span class="lang-ko">UMA 분쟁 해결 분석</span><span class="lang-en">UMA Dispute Resolution Analysis</span></h3>
+
+            <div class="oracle-grid">
+                <div class="chart-container">
+                    <div class="chart-title"><span class="lang-ko">UMA 식별자 유형별 분포</span><span class="lang-en">UMA Request Categories</span></div>
+                    <canvas id="umaIdentCatChart" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title"><span class="lang-ko">YES_OR_NO_QUERY 해결 결과</span><span class="lang-en">YES_OR_NO_QUERY Resolution</span></div>
+                    <canvas id="umaYesNoChart" height="200"></canvas>
+                </div>
+            </div>
+
+            <div class="oracle-grid">
+                <div class="chart-container">
+                    <div class="chart-title"><span class="lang-ko">YES_OR_NO_QUERY 투표 합의도</span><span class="lang-en">YES_OR_NO_QUERY Vote Consensus</span></div>
+                    <canvas id="umaConsensusChart" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title"><span class="lang-ko">UMA 투표 권한 집중도 (상위 10명)</span><span class="lang-en">UMA Voting Power Concentration (Top 10)</span></div>
+                    <canvas id="umaVoterPowerChart" height="200"></canvas>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h4><span class="lang-ko">UMA 분쟁 해결 인사이트</span><span class="lang-en">UMA Dispute Resolution Insights</span></h4>
+                <p class="lang-ko">UMA DVM에 제출된 239건의 가격 요청 중 YES_OR_NO_QUERY(예측시장 분쟁)는 25건입니다.
+                이 중 Yes 11건, No 3건, 해결불가 10건, 불확정 1건으로 해결되었습니다.
+                평균 합의율 95.9%, 만장일치 비율 72.0%로 높은 합의 수준을 보이지만,
+                상위 5명이 전체 투표 토큰의 58.1%를 차지하여 소수에 의한 결정 구조입니다.</p>
+                <p class="lang-en">Of 239 price requests submitted to UMA DVM, 25 were YES_OR_NO_QUERY (prediction market disputes).
+                Results: Yes 11, No 3, Unresolvable 10, Indeterminate 1.
+                Average consensus 95.9% with 72.0% unanimous, showing high agreement.
+                However, top 5 voters control 58.1% of voting tokens — decisions are made by a few.</p>
+            </div>
+
+            <h3 style="margin-top: 50px;"><span class="lang-ko">Kleros Court 분쟁 해결 분석</span><span class="lang-en">Kleros Court Dispute Resolution Analysis</span></h3>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">110</div>
+                    <div class="stat-label"><span class="lang-ko">판결 완료</span><span class="lang-en">Resolved</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value warning">8</div>
+                    <div class="stat-label"><span class="lang-ko">미해결</span><span class="lang-en">Unresolved</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">95.7%</div>
+                    <div class="stat-label"><span class="lang-ko">평균 합의율</span><span class="lang-en">Avg Consensus</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value danger">90.9%</div>
+                    <div class="stat-label"><span class="lang-ko">배심원 반복 참여율</span><span class="lang-en">Juror Repeat Rate</span></div>
+                </div>
+            </div>
+
+            <div class="oracle-grid">
+                <div class="chart-container">
+                    <div class="chart-title"><span class="lang-ko">Kleros Ruling 분포</span><span class="lang-en">Kleros Ruling Distribution</span></div>
+                    <canvas id="klerosRulingChart" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title"><span class="lang-ko">Kleros 배심원 참여 빈도 (상위 10명)</span><span class="lang-en">Kleros Juror Participation (Top 10)</span></div>
+                    <canvas id="klerosJurorChart" height="200"></canvas>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <h4><span class="lang-ko">Kleros Court 인사이트</span><span class="lang-en">Kleros Court Insights</span></h4>
+                <p class="lang-ko">Kleros v2 Court에서 118건의 분쟁 중 110건(93.2%)이 판결 완료되었습니다.
+                Ruling 2가 다수(66건)이며, 평균 합의율은 95.7%입니다.
+                전체 44명의 고유 투표자 중 40명(90.9%)이 복수 분쟁에 참여하여
+                소수의 전문 배심원이 분쟁 해결을 주도하고 있습니다.</p>
+                <p class="lang-en">In Kleros v2 Court, 110 of 118 disputes (93.2%) have been resolved.
+                Ruling 2 dominates (66 cases), with average consensus at 95.7%.
+                Of 44 unique voters, 40 (90.9%) participated in multiple disputes,
+                showing that a small group of professional jurors drives dispute resolution.</p>
+            </div>
+
+            <div class="download-links">
+                <a href="uma_decoded_requests.csv" download>📥 <span class="lang-ko">UMA 디코딩 요청</span><span class="lang-en">UMA Decoded Requests</span></a>
+                <a href="kleros_decoded_disputes.csv" download>📥 <span class="lang-ko">Kleros 디코딩 분쟁</span><span class="lang-en">Kleros Decoded Disputes</span></a>
+            </div>
+        </section>
+
         <footer>
-            <p><span class="lang-ko">데이터 수집일</span><span class="lang-en">Data collected</span>: 2026-02-07</p>
+            <p><span class="lang-ko">데이터 수집일</span><span class="lang-en">Data collected</span>: 2026-02-09</p>
             <p><span class="lang-ko">Polymarket API &amp; Etherscan API 기반</span><span class="lang-en">Based on Polymarket API &amp; Etherscan API</span></p>
             <div class="download-links" style="justify-content: center; margin-top: 15px;">
                 <a href="data.json" download>📥 <span class="lang-ko">전체 데이터 (JSON)</span><span class="lang-en">Full Data (JSON)</span></a>
@@ -851,7 +960,11 @@
                 oracleSubtitle: '값이 높을수록 집중도 높음 (나카모토 계수 제외)',
                 events: '이벤트 수',
                 klerosFunnel: ['DisputeCreation', 'Draw (배심원)', 'VoteCast (투표)', 'Ruling (판결)', 'Appeal (항소)'],
-                title: '예측시장 구조적 리스크 분석'
+                title: '예측시장 구조적 리스크 분석',
+                tokenShare: '토큰 점유율 %',
+                consensus: '합의율 %',
+                votes: '투표 수',
+                disputes: '분쟁 수'
             },
             en: {
                 volumeShare: 'Volume Share (%)',
@@ -864,7 +977,11 @@
                 oracleSubtitle: 'Higher = more concentrated (except Nakamoto)',
                 events: 'Events',
                 klerosFunnel: ['DisputeCreation', 'Draw (Juror)', 'VoteCast (Vote)', 'Ruling', 'Appeal'],
-                title: 'Prediction Market Structural Risk Analysis'
+                title: 'Prediction Market Structural Risk Analysis',
+                tokenShare: 'Token Share %',
+                consensus: 'Consensus %',
+                votes: 'Votes',
+                disputes: 'Disputes'
             }
         };
 
@@ -893,6 +1010,21 @@
             chartKlerosFunnel.data.labels = tr.klerosFunnel;
             chartKlerosFunnel.data.datasets[0].label = tr.events;
             chartKlerosFunnel.update();
+
+            // Section 5 charts
+            if (typeof chartUmaConsensus !== 'undefined') {
+                chartUmaConsensus.data.datasets[0].label = tr.consensus;
+                chartUmaConsensus.update();
+            }
+            if (typeof chartUmaVoterPower !== 'undefined') {
+                chartUmaVoterPower.data.datasets[0].label = tr.tokenShare;
+                chartUmaVoterPower.update();
+            }
+            if (typeof chartKlerosJuror !== 'undefined') {
+                chartKlerosJuror.data.datasets[0].label = tr.votes;
+                chartKlerosJuror.data.datasets[1].label = tr.disputes;
+                chartKlerosJuror.update();
+            }
 
             document.title = tr.title;
             document.documentElement.lang = lang;
@@ -1141,6 +1273,163 @@
                     y: { grid: { display: false }, ticks: { color: '#ccc' } }
                 },
                 plugins: { legend: { display: false } }
+            }
+        });
+
+        // === Section 5: Oracle Accuracy Charts ===
+
+        // UMA Identifier Category Chart
+        const umaIdentCatData = {"Admin (Governance)": 133, "Bridge Verification": 50, "Price Feed": 31, "YES_OR_NO_QUERY": 25};
+        const chartUmaIdentCat = new Chart(document.getElementById('umaIdentCatChart'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(umaIdentCatData),
+                datasets: [{
+                    data: Object.values(umaIdentCatData),
+                    backgroundColor: [
+                        'rgba(255, 107, 107, 0.8)',
+                        'rgba(255, 165, 0, 0.8)',
+                        'rgba(100, 200, 255, 0.8)',
+                        'rgba(144, 238, 144, 0.8)',
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'right', labels: { color: '#ccc', font: { size: 11 } } }
+                }
+            }
+        });
+
+        // UMA YES_OR_NO_QUERY Resolution Donut
+        const yesnoResData = {"Yes": 11, "Unresolvable": 10, "No": 3, "Indeterminate": 1};
+        const yesnoColors = {
+            'Yes': 'rgba(144, 238, 144, 0.8)',
+            'No': 'rgba(255, 107, 107, 0.8)',
+            'Indeterminate': 'rgba(255, 165, 0, 0.8)',
+            'Unresolvable': 'rgba(150, 150, 150, 0.8)',
+        };
+        const chartUmaYesNo = new Chart(document.getElementById('umaYesNoChart'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(yesnoResData),
+                datasets: [{
+                    data: Object.values(yesnoResData),
+                    backgroundColor: Object.keys(yesnoResData).map(k => yesnoColors[k] || 'rgba(186, 147, 255, 0.8)'),
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'right', labels: { color: '#ccc', font: { size: 11 } } }
+                }
+            }
+        });
+
+        // UMA YES_OR_NO_QUERY Consensus Bar Chart
+        const yesnoDetails = [{"round_id": 9461, "resolution": "Indeterminate", "voters": 44, "consensus": 1.0}, {"round_id": 9535, "resolution": "Yes", "voters": 57, "consensus": 0.9994}, {"round_id": 9540, "resolution": "Unresolvable", "voters": 62, "consensus": 1.0}, {"round_id": 9547, "resolution": "Yes", "voters": 70, "consensus": 0.9995}, {"round_id": 9548, "resolution": "Yes", "voters": 76, "consensus": 0.8222}, {"round_id": 9549, "resolution": "Yes", "voters": 67, "consensus": 0.9979}, {"round_id": 9550, "resolution": "Unresolvable", "voters": 68, "consensus": 0.9172}, {"round_id": 9552, "resolution": "Yes", "voters": 67, "consensus": 1.0}, {"round_id": 9571, "resolution": "Unresolvable", "voters": 56, "consensus": 0.999}, {"round_id": 9573, "resolution": "Unresolvable", "voters": 59, "consensus": 0.9993}, {"round_id": 9573, "resolution": "Unresolvable", "voters": 59, "consensus": 0.9993}, {"round_id": 9573, "resolution": "Unresolvable", "voters": 59, "consensus": 0.9991}, {"round_id": 9575, "resolution": "No", "voters": 61, "consensus": 1.0}, {"round_id": 9586, "resolution": "Unresolvable", "voters": 61, "consensus": 0.9664}, {"round_id": 9588, "resolution": "Yes", "voters": 64, "consensus": 0.9931}, {"round_id": 9594, "resolution": "Yes", "voters": 64, "consensus": 1.0}, {"round_id": 9616, "resolution": "No", "voters": 64, "consensus": 0.8849}, {"round_id": 9619, "resolution": "Yes", "voters": 66, "consensus": 0.9933}, {"round_id": 9653, "resolution": "Yes", "voters": 71, "consensus": 1.0}, {"round_id": 9664, "resolution": "No", "voters": 68, "consensus": 0.9693}, {"round_id": 9667, "resolution": "Yes", "voters": 67, "consensus": 0.6633}, {"round_id": 9679, "resolution": "Yes", "voters": 65, "consensus": 1.0}, {"round_id": 9683, "resolution": "Unresolvable", "voters": 63, "consensus": 1.0}, {"round_id": 9707, "resolution": "Unresolvable", "voters": 58, "consensus": 1.0}, {"round_id": 9707, "resolution": "Unresolvable", "voters": 59, "consensus": 0.78}];
+        const chartUmaConsensus = new Chart(document.getElementById('umaConsensusChart'), {
+            type: 'bar',
+            data: {
+                labels: yesnoDetails.map(d => 'R' + d.round_id),
+                datasets: [{
+                    label: 'Consensus %',
+                    data: yesnoDetails.map(d => Math.round(d.consensus * 100)),
+                    backgroundColor: yesnoDetails.map(d => {
+                        if (d.resolution === 'Yes') return 'rgba(144, 238, 144, 0.8)';
+                        if (d.resolution === 'No') return 'rgba(255, 107, 107, 0.8)';
+                        if (d.resolution === 'Unresolvable') return 'rgba(150, 150, 150, 0.8)';
+                        return 'rgba(255, 165, 0, 0.8)';
+                    }),
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true, max: 100, grid: { color: '#333' }, ticks: { color: '#888', callback: v => v + '%' } },
+                    x: { grid: { display: false }, ticks: { color: '#888', font: { size: 9 }, maxRotation: 90 } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // UMA Voter Power Concentration
+        const umaTopVoters = [{"address": "0x9a97c80956bce4dd87c2df6a93900dbfcbf0d60a", "total_tokens": 1110333987.3226497, "token_share": 22.61, "rounds_participated": 76}, {"address": "0x61d62b3d530ab8174dbfade1675d856c5c5c9fcd", "total_tokens": 747694461.9194556, "token_share": 15.23, "rounds_participated": 51}, {"address": "0x8bd16de8938a2ad16794ac7e7502896f156e370c", "total_tokens": 592819223.524447, "token_share": 12.07, "rounds_participated": 29}, {"address": "0xfc204fcfd2a579157898a212ea25ac98de2b1e1c", "total_tokens": 233886833.65736172, "token_share": 4.76, "rounds_participated": 99}, {"address": "0xddb751f0a4a9f33d277667ab81560bfeefb466bc", "total_tokens": 170106702.3574188, "token_share": 3.46, "rounds_participated": 103}, {"address": "0xd2a78bb82389d30075144d17e782964918999f7f", "total_tokens": 162642528.02758133, "token_share": 3.31, "rounds_participated": 105}, {"address": "0x2f840532892f91811f99cdaec703f322a779cc66", "total_tokens": 150202156.51852795, "token_share": 3.06, "rounds_participated": 5}, {"address": "0xfcc544de1df80ee89e1d6a236fa9f8e89ee5804f", "total_tokens": 146210412.39723933, "token_share": 2.98, "rounds_participated": 98}, {"address": "0x4fcc940e1e890ae00dbfa66fde55329533427810", "total_tokens": 146065526.14975744, "token_share": 2.97, "rounds_participated": 98}, {"address": "0xee160154b02a2e404c6c13ff0b28ed76010cf07d", "total_tokens": 128937269.8707546, "token_share": 2.63, "rounds_participated": 104}];
+        const chartUmaVoterPower = new Chart(document.getElementById('umaVoterPowerChart'), {
+            type: 'bar',
+            data: {
+                labels: umaTopVoters.map(v => v.address.slice(0, 8) + '...'),
+                datasets: [{
+                    label: 'Token Share %',
+                    data: umaTopVoters.map(v => v.token_share),
+                    backgroundColor: umaTopVoters.map((v, i) => i < 5 ? 'rgba(255, 107, 107, 0.8)' : 'rgba(255, 165, 0, 0.8)'),
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#888', callback: v => v + '%' } },
+                    x: { grid: { display: false }, ticks: { color: '#888', font: { size: 9 }, maxRotation: 45 } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Kleros Ruling Distribution Donut
+        const klerosRulingData = {"Ruling 1": 43, "Ruling 2": 66, "Ruling 3": 1};
+        const chartKlerosRuling = new Chart(document.getElementById('klerosRulingChart'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(klerosRulingData),
+                datasets: [{
+                    data: Object.values(klerosRulingData),
+                    backgroundColor: [
+                        'rgba(255, 107, 107, 0.8)',
+                        'rgba(100, 200, 255, 0.8)',
+                        'rgba(255, 165, 0, 0.8)',
+                        'rgba(144, 238, 144, 0.8)',
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'right', labels: { color: '#ccc', font: { size: 11 } } }
+                }
+            }
+        });
+
+        // Kleros Juror Participation
+        const klerosTopJurors = [{"address": "0x97188c8755443868f150ca2ed307671e7d686744", "total_votes": 30, "disputes_participated": 30}, {"address": "0x5700f03f87db485fdb90e18b3100f00b235886f1", "total_votes": 29, "disputes_participated": 29}, {"address": "0xd05eb495d3839397ca087221e3667a0fa2a6c9bc", "total_votes": 28, "disputes_participated": 28}, {"address": "0x001fe2cdbeeb0743679e958c0861dd8788b28b19", "total_votes": 25, "disputes_participated": 25}, {"address": "0x750a9e546d348e323b8c0f98cf71ea806f37112b", "total_votes": 25, "disputes_participated": 25}, {"address": "0x600072f956382cfd3cd4b059f2b713542bc68102", "total_votes": 24, "disputes_participated": 24}, {"address": "0x6e590863f9b04189e0d5143eb41367b96dc151ca", "total_votes": 23, "disputes_participated": 23}, {"address": "0x23069f1978fe4d6ec88bf0b84bca2b39d3b285e1", "total_votes": 23, "disputes_participated": 23}, {"address": "0x6687c671980e65ebd722b9146fc61e2471558dd6", "total_votes": 22, "disputes_participated": 22}, {"address": "0xaead6593710bf28bf4848b24f4ed1f130773d7e6", "total_votes": 21, "disputes_participated": 21}];
+        const chartKlerosJuror = new Chart(document.getElementById('klerosJurorChart'), {
+            type: 'bar',
+            data: {
+                labels: klerosTopJurors.map(j => j.address.slice(0, 8) + '...'),
+                datasets: [{
+                    label: 'Votes',
+                    data: klerosTopJurors.map(j => j.total_votes),
+                    backgroundColor: 'rgba(100, 200, 255, 0.7)',
+                    borderWidth: 0
+                }, {
+                    label: 'Disputes',
+                    data: klerosTopJurors.map(j => j.disputes_participated),
+                    backgroundColor: 'rgba(255, 165, 0, 0.7)',
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#888' } },
+                    x: { grid: { display: false }, ticks: { color: '#888', font: { size: 9 }, maxRotation: 45 } }
+                },
+                plugins: { legend: { labels: { color: '#ccc' } } }
             }
         });
 
