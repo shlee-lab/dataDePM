@@ -6,3 +6,9 @@ __pycache__/
 *.parquet
 nohup.out
 paper/
+
+# Bias analysis (unpublished research)
+site/bias.html
+site/calibration.html
+site/calibration_data.json
+site/unified_report_data.json
