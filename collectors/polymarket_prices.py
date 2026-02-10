@@ -8,6 +8,7 @@ Polymarket 가격 히스토리 수집 및 Calibration 스냅샷 추출
 
 import json
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 
@@ -120,11 +121,12 @@ def fetch_price_history(clob_token_id: str, session: requests.Session) -> list:
         return []
 
 
-def collect_price_histories(target_df: pd.DataFrame) -> pd.DataFrame:
-    """대상 마켓들의 가격 히스토리 일괄 수집.
+def collect_price_histories(target_df: pd.DataFrame, max_workers: int = 10) -> pd.DataFrame:
+    """대상 마켓들의 가격 히스토리 병렬 수집.
 
     Args:
         target_df: must have columns [id, clob_token_id_yes]
+        max_workers: 병렬 스레드 수 (기본 10)
 
     Returns:
         DataFrame with columns: market_id, t, p
@@ -135,29 +137,34 @@ def collect_price_histories(target_df: pd.DataFrame) -> pd.DataFrame:
     success = 0
     empty = 0
 
-    print(f"  [1B] 가격 히스토리 수집 중... ({total} 마켓)", flush=True)
+    print(f"  [1B] 가격 히스토리 수집 중... ({total} 마켓, {max_workers} threads)", flush=True)
 
-    for i, row in target_df.iterrows():
+    def _fetch_one(row):
         market_id = row["id"]
         clob_id = row["clob_token_id_yes"]
-
         history = fetch_price_history(clob_id, session)
+        return market_id, history
 
-        if history:
-            for point in history:
-                all_rows.append({
-                    "market_id": market_id,
-                    "t": int(point.get("t", 0)),
-                    "p": float(point.get("p", 0)),
-                })
-            success += 1
-        else:
-            empty += 1
+    rows_list = [row for _, row in target_df.iterrows()]
 
-        if (success + empty) % 100 == 0:
-            print(f"    진행: {success + empty}/{total} (성공: {success}, 빈 히스토리: {empty})", flush=True)
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {executor.submit(_fetch_one, row): i for i, row in enumerate(rows_list)}
+        for future in as_completed(futures):
+            market_id, history = future.result()
+            if history:
+                for point in history:
+                    all_rows.append({
+                        "market_id": market_id,
+                        "t": int(point.get("t", 0)),
+                        "p": float(point.get("p", 0)),
+                    })
+                success += 1
+            else:
+                empty += 1
 
-        time.sleep(0.3)
+            done = success + empty
+            if done % 500 == 0:
+                print(f"    진행: {done}/{total} (성공: {success}, 빈: {empty})", flush=True)
 
     print(f"    완료: {success} 마켓 히스토리, {len(all_rows)} 데이터포인트", flush=True)
     return pd.DataFrame(all_rows)
